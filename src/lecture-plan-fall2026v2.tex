@@ -1,0 +1,121 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=18mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,longtable,array}
+\usepackage[table]{xcolor}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\newcommand{\done}[1]{\textcolor{black!45}{#1}}
+\newcommand{\hw}[1]{\textbf{#1}}
+
+\begin{document}
+
+{\LARGE\bfseries Advanced Optimization --- Lecture Plan}\\[0.2em]
+{\large Fall 2026, Sogang University, Dept.\ of Electronic Engineering \quad Prof.\ Hongseok Kim}\\[0.2em]
+{\small Text: Nocedal \& Wright, \emph{Numerical Optimization}, 2nd ed.\quad Tue/Thu.\quad Revised Oct 9, 2026
+(student presentations Nov 10--17).}
+
+\textbf{Scope.} The course covers \emph{unconstrained} optimization in depth (Ch.~3--7) and the \emph{theory} of
+constrained optimization (Ch.~12). It closes with a two-lecture reading guide to primal-dual interior-point
+methods (Ch.~19) --- the algorithm inside IPOPT and KNITRO --- and a final project in which you run IPOPT on a
+small AC OPF and explain every line of its log using Ch.~3, 12 and 19. Constrained \emph{algorithms}
+(Ch.~15--18) are outside the course; the last section says when you would need them.
+
+\renewcommand{\arraystretch}{1.15}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{7mm}>{\raggedright\arraybackslash}p{18mm}>{\raggedright\arraybackslash}p{86mm}>{\raggedright\arraybackslash}p{47mm}@{}}
+\toprule
+\textbf{Wk} & \textbf{Date} & \textbf{Topic} & \textbf{Reading / HW}\\
+\midrule
+\endhead
+\done{1--4} & \done{Sep 1--22} & \done{Ch.~1--2; Ch.~3 line search (Wolfe, Zoutendijk, Newton/quasi-Newton rates,
+  Hessian modification); Ch.~4 framework, Algorithm 4.1, Theorem 4.1 --- \emph{done}} & \done{HW3 out Sep 22}\\
+4 & Sep 24 & \emph{No class (Chuseok)} & \\
+\midrule
+\done{5} & \done{Sep 29} & \done{Ch.~4: Cauchy point, fraction of Cauchy decrease, dogleg, 2D subspace
+  minimization; Steihaug-CG named only --- \emph{done}} & \done{\S4.1}\\
+ & \done{Oct 1} & \done{Ch.~4: global convergence (Thm.~4.5--4.6), local convergence, scaling; \S4.3 skipped
+  --- \emph{done}} & \done{\S4.2, 4.4--4.5; HW4 out}\\
+\done{6} & \done{Oct 6} & \done{Ch.~5: linear CG I --- conjugate directions, expanding subspace (Thm.~5.2),
+  Algorithm 5.1 $\to$ 5.2 --- \emph{done}} & \done{\S5.1}\\
+ & \done{Oct 8} & \done{Ch.~5: linear CG II --- rate of convergence, eigenvalue clustering, preconditioning;
+  nonlinear CG --- \emph{done}} & \done{\S5.1--5.2; HW5 out}\\
+7 & Oct 13 & Ch.~6: BFGS --- secant equation, why $s^{T}y>0$ needs Wolfe, implementation & \S6.1\\
+ & Oct 15 & Ch.~6: SR1, Broyden class, convergence results (stated), Dennis--Mor\'e revisited
+  & \S6.2--6.4; \hw{HW6 out}\\
+\midrule
+8 & Oct 20 & \textbf{Midterm exam} (Ch.~3--6) & \\
+ & Oct 22 & Buffer / catch-up (midterm week) & \\
+\midrule
+9 & Oct 27 & Ch.~7: inexact Newton, Newton-CG, trust-region Newton-CG & \S7.1\\
+ & Oct 29 & Ch.~7: L-BFGS; what is skipped in \S7.3--7.4 and why & \S7.2; \hw{HW7 out}\\
+10 & Nov 3 & Ch.~12: examples, tangent cone, LICQ, first-order necessary conditions (statement)
+  & \S12.1--12.2\\
+ & Nov 5 & Ch.~12: proof of KKT via Farkas' lemma; constraint qualifications & \S12.3, 12.6\\
+\midrule
+11 & Nov 10 & \textbf{Student presentation 1: Shampoo} (instructor traveling; recorded) & see below\\
+ & Nov 12 & \textbf{Student presentation 2: SOAP} (instructor traveling; recorded) & see below\\
+12 & Nov 17 & \textbf{Student presentation 3: Muon} (instructor traveling; recorded) & see below\\
+ & Nov 19 & Ch.~12: second-order conditions, critical cone & \S12.5\\
+13 & Nov 24 & Ch.~12: degeneracy, duality, multipliers as sensitivities; KKT of a small AC OPF,
+  multipliers as prices & \S12.7--12.9, notes; \hw{HW12 out}\\
+ & Nov 26 & Ch.~19 reading guide I: barrier problem, primal-dual Newton system, central path,
+  inertia (\S3.4 again) & \S19.1--19.3\\
+14 & Dec 1 & Ch.~19 reading guide II: merit function / filter line search; an IPOPT log, line by line
+  & \S19.4--19.6; W\"achter--Biegler (2006)\\
+ & Dec 3 & Final project workshop (IPOPT via JuMP / Pyomo / CasADi) & \\
+15 & Dec 8, 10 & Final project presentations & \\
+16 & Dec 15, 17 & Final exam week --- no lecture; \textbf{project report due} & \\
+\bottomrule
+\end{longtable}
+
+{\small Assumed: 16-week semester from Sep 1, midterm week 8 (Oct 20--22), final week 16 (Dec 15--17).
+Adjust if the official calendar differs. Changes from the Sep 22 version: the instructor is traveling
+Nov 9--18, so Nov 10, 12 and 17 are student presentations; Ch.~12 continues on Nov 19--24, and Ch.~19 and the
+project workshop move later by one session. The two buffer sessions (Nov 19, Dec 3) are used for this.}
+
+\textbf{Student presentations (Nov 10, 12, 17).} Six students, three groups of two, one optimizer per session:
+\begin{itemize}[leftmargin=*,itemsep=0.1em]
+  \item \textbf{Shampoo} --- Gupta, Koren \& Singer (2018).
+  \item \textbf{SOAP} --- Vyas et al.\ (2024).
+  \item \textbf{Muon} --- Jordan et al.\ (2024).
+\end{itemize}
+Each group studies its method together and presents it in the language of this course: which matrix plays the
+role of the preconditioner or of $B_k$, how it is updated, what one step costs, and how it relates to
+preconditioning (Ch.~5) and quasi-Newton updating (Ch.~6--7). The session is run by the students and
+recorded; the group uploads the recording.
+
+\textbf{Homework thread.} One problem set per chapter, one week each. Code is expected to be written with AI
+assistance; grading is on the \emph{observations}, not the code. The line search from HW3 is reused in HW5--HW7.
+\begin{itemize}[leftmargin=*,itemsep=0.1em]
+  \item \textbf{HW3} --- backtracking (Alg.~3.1) and strong-Wolfe (Alg.~3.5--3.6) line searches; steepest descent
+    and Newton on Rosenbrock; Alg.~3.3 on an indefinite Hessian; Zoutendijk annotated; Ex.~3.5.
+  \item \textbf{HW4} --- Algorithm 4.1 with dogleg on Rosenbrock; log $\Delta_k,\rho_k$; compare iteration counts
+    with HW3.
+  \item \textbf{HW5} --- linear CG on an SPD matrix with clustered vs.\ spread eigenvalues ($n=100$): iteration
+    count follows the clusters; FR and PR$^{+}$ with the HW3 line search, $c_2=0.1$.
+  \item \textbf{HW6} --- BFGS with the HW3 line search on Rosenbrock; log $\|B_k-\nabla^2 f_k\|$ against
+    $\|(B_k-\nabla^2 f_k)p_k\|/\|p_k\|$ (Dennis--Mor\'e in action).
+  \item \textbf{HW7} --- L-BFGS with $m\in\{3,5,20\}$ on an $n=10^4$ problem; compare with Newton-CG.
+  \item \textbf{HW12} --- KKT conditions by hand for a 2- or 3-bus DC OPF; identify what each multiplier means.
+\end{itemize}
+
+\textbf{Final project.} Solve a small AC OPF (pglib-opf \texttt{case5} or \texttt{case14}) with IPOPT. Annotate
+the solver log: barrier parameter $\mu$ and its decrease (\S19.3), primal/dual infeasibility and complementarity
+(Ch.~12), \texttt{inertia correction} (\S3.4), step lengths $\alpha$ and the merit/filter decision (\S19.4).
+Report: 4 pages, plus a 10-minute presentation.
+
+\textbf{Not covered, and when you would need it.}
+\begin{itemize}[leftmargin=*,itemsep=0.1em]
+  \item Ch.~8 (derivatives, automatic differentiation) --- this is what \texttt{autograd} does; read \S8.2 once.
+  \item Ch.~9 (derivative-free), Ch.~11 (nonlinear equations) --- niche for this course.
+  \item Ch.~10 (nonlinear least squares: Gauss--Newton, Levenberg--Marquardt) --- read if you fit models; it is
+    Ch.~4 applied.
+  \item Ch.~13 (simplex), Ch.~14 (LP interior point) --- Ch.~14's idea is all that Ch.~19 needs, and it is given
+    in the reading guide.
+  \item Ch.~15--18 (merit functions, QP, penalty/augmented Lagrangian, SQP) --- read Ch.~17 if you use
+    ADMM-type methods; Ch.~18 is KNITRO's other mode.
+\end{itemize}
+
+\end{document}
