@@ -1,3 +1,5 @@
+---
+---
 <!doctype html>
 <html lang="ko">
 <head>
@@ -16,6 +18,22 @@
 </head>
 <body>
   <h1>강의자료</h1>
-
+{%- comment -%} Rebuilt by GitHub Pages on every push: lists every PDF, grouped by top-level folder. {%- endcomment -%}
+{%- assign pdfs = site.static_files | where: "extname", ".pdf" -%}
+{%- assign groups = pdfs | group_by_exp: "f", "f.path | remove_first: '/' | split: '/' | first" | sort: "name" | reverse -%}
+{%- for g in groups %}
+  {%- assign prefix = "/" | append: g.name | append: "/" %}
+  <section>
+    <h2>{{ site.data.courses[g.name] | default: g.name }}</h2>
+    <ul>
+    {%- assign files = g.items | sort: "path" -%}
+    {%- for f in files %}
+      <li><a href="{{ f.path | remove_first: '/' }}">{{ f.path | remove_first: prefix | remove: ".pdf" }}</a></li>
+    {%- endfor %}
+    </ul>
+  </section>
+{%- else %}
+  <p class="empty">(아직 자료 없음)</p>
+{%- endfor %}
 </body>
 </html>
