@@ -25,7 +25,8 @@
 | 6 | ch06v2 | 교수님이 올릴 예정 | 37장 |
 | 7 | ch07v2 | 교수님이 올릴 예정 | 30장 |
 | 10 | ch10v2 | ch10v2.tex | 30장 (2026-10-10). 시간이 되면 10월 22일 |
-| 12, 19 | ch12, ch19 | 없음 | 12pt 형식으로 다시 만들지 미정 |
+| 12 | ch12 | 없음 | 12pt 형식으로 다시 만들지 미정 |
+| 19 | ch19 | 없음 | ch19v2를 만들 예정 (Ch. 15 일부 포함, 아래 Ch. 19 참고) |
 
 Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
 
@@ -88,6 +89,24 @@ Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
 - 5회 → 4회로 줄임 (11월 3·5·19·24일). 24일에 degeneracy, duality, sensitivity, AC OPF KKT 예제를 몰아넣었다.
   여유가 생기면 이 장에 한 회를 돌려주는 것이 우선이다.
 - Sensitivity(multipliers as sensitivities)는 FREEDOM의 미분(KKT implicit differentiation)과 겹친다.
+- 기존 ch12.pdf(17장)는 구 형식(작은 폰트, 한 장에 내용 과다)이고 비유 표현이 있다
+  ("the linearization lies", "tells the truth", "switches the constraint on and off"). `Read:` 표시도 없다.
+- 증명 처리 (2026-10-10): 교수님은 증명을 전부 읽는다. 학생 reading assignment는 Thm 12.1(KKT) 증명의 구조,
+  Thm 12.6(second-order sufficient), Lemma 12.2의 T_Ω ⊂ F 방향만. Lemma 12.2의 반대 방향, Thm 12.5, §12.6 MFCQ 세부는 뺀다.
+  Ch. 12는 중간고사 범위 밖이므로 HW12에 증명의 한 단계를 묻는 문제를 넣는다
+  (예: Thm 12.1 증명에서 LICQ가 쓰이는 곳, LICQ가 깨지는 예에서 그 단계가 실패하는 이유).
+
+### Ch. 19 — v2를 만들 것 (2026-10-10 결정)
+- Ch. 15에서 Ch. 19가 쓰는 부분을 포함해서 `ch19v2`를 새로 만든다. 수업은 Ch. 12 → 19로 바로 가므로 그 부분을 19 덱 안에 넣는다.
+- Ch. 19 본문이 참조하는 Ch. 15 부분 (책 본문 대조로 확인):
+  - §15.2 Example 15.1: inequality 문제의 active set 결정이 combinatorial하다는 것. §19.1이 interior-point를 쓰는 이유로 이 예를 든다.
+  - §15.4 merit function (ℓ₁ exact merit)과 filter, restoration phase. §19.3–19.4 step acceptance와 §19.7 이 직접 참조한다.
+  - §15.5 Maratos effect, §15.6 second-order correction과 nonmonotone 기법. §19.4가 merit function이 Maratos effect를 일으킬 때 쓰라고 한다.
+- IPOPT는 filter line search, second-order correction, restoration phase를 쓴다. 기말 프로젝트에서 IPOPT log를 해석하려면 이 부분이 필요하다.
+- Ch. 19가 Ch. 16, 18에서 가져오는 것도 있다: KKT matrix와 symmetric indefinite factorization (16.7), (16.12),
+  Hessian 수정·inertia, damped BFGS (18.14)–(18.15), penalty parameter ν 갱신. 덱에서는 결과만 한 줄씩 서술한다.
+- 형식은 ch05v3 서식, 30장 안팎. 기존 ch19.pdf는 지우지 않는다.
+
 
 ### Ch. 16, 18 (수업 범위 밖, FREEDOM용)
 - QP/SQP는 강의용이 아니라 필요하면 FREEDOM을 위해 공부한다.
