@@ -24,9 +24,10 @@
 | 5 | ch05v3 | ch05v3.tex | 현재 서식 기준 |
 | 6 | ch06v2 | 교수님이 올릴 예정 | 37장 |
 | 7 | ch07v2 | 교수님이 올릴 예정 | 30장 |
+| 10 | ch10v2 | ch10v2.tex | 30장 (2026-10-10). 시간이 되면 10월 22일 |
 | 12, 19 | ch12, ch19 | 없음 | 12pt 형식으로 다시 만들지 미정 |
 
-Ch. 8–11, 16–18 덱도 있으나 수업 범위 밖이다.
+Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
 
 ## 챕터별
 
@@ -76,6 +77,12 @@ Ch. 8–11, 16–18 덱도 있으나 수업 범위 밖이다.
 ### Ch. 10 (시간이 되면)
 - Gauss–Newton은 B_k = J_kᵀJ_k를 고르는 방법, Levenberg–Marquardt는 그 model에 Ch. 4 trust region을 쓴 것.
 - Ch. 4와 6만 있으면 되므로 Ch. 12 전에 넣을 수 있다. 전력계통 WLS state estimation이 Gauss–Newton이다.
+- 덱 30장 (2026-10-10, ch05v2/ch06v2 서식). 책에 증명이 있는 것: Thm 10.1, Lemma 10.2, Thm 10.3. (10.30)은 유도만.
+- "(Not in the book.)" 두 곳: Ch. 6과의 비교(GN은 B_k = JᵀJ를 고르는 것), 활용 사례(전력계통 WLS state estimation,
+  ML의 generalized Gauss–Newton과 Shampoo — Morwani et al., ICLR 2025).
+- Figure 10.1, 10.2는 TikZ로 다시 그렸다. (10.30)은 책의 ≈ 형태만 실었다.
+- 숙제: Ex 10.1(a), 10.2, 10.3(a) + 손계산(r₁ = x−2, r₂ = x²−1, x₀ = 0: GN step 2, LM(λ=1) step 1,
+  Newton step −2, Newton은 descent 아님) + (10.6) 모형에 GN 구현.
 
 ### Ch. 12
 - 5회 → 4회로 줄임 (11월 3·5·19·24일). 24일에 degeneracy, duality, sensitivity, AC OPF KKT 예제를 몰아넣었다.
