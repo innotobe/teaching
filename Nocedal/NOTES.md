@@ -22,7 +22,7 @@
 | 3 | ch03 | 없음 | 12pt 재작성본(ch03v2)을 다른 대화에서 만들었으나 repo에는 아직 없음 |
 | 4 | ch04 | 없음 | 본문 약 9pt (구 형식) |
 | 5 | ch05v3 | ch05v3.tex | 현재 서식 기준 |
-| 6 | ch06v2 | 교수님이 올릴 예정 | 37장 |
+| 6 | ch06v2.1 | ch06v2.1.tex | 28장 (2026-10-10). ch06v2(37장)에서 수업에 안 쓰는 slide를 뺀 판 |
 | 7 | ch07v2 | 교수님이 올릴 예정 | 30장 |
 | 10 | ch10v2 | ch10v2.tex | 30장 (2026-10-10). 시간이 되면 10월 22일 |
 | 12 | ch12 | 없음 | 12pt 형식으로 다시 만들지 미정 |
@@ -62,6 +62,16 @@ Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
 - 이름: DFP = Davidon–Fletcher–Powell, BFGS = Broyden–Fletcher–Goldfarb–Shanno.
   Powell은 Cambridge의 M. J. D. Powell (Princeton의 Warren Powell과 다른 사람).
 - secant 발음: SEE-kənt (미국식).
+- ch06v2.1 (2026-10-10): SR1 유도·존재 조건·Algorithm 6.2·Thm 6.1, 6.2, Broyden Thm 6.3, 6.4,
+  Remarks on 6.5, Thm 6.7을 뺐다. 뺀 것은 Read 포인터로 쪽수만 남김. Reading Theorem 6.6(Dennis–Moré)은 남김.
+- ch06v2.1에 추가 (Not in the book.):
+  - Weighted norm = curvature를 고려한 error metric. 예: ∇²f = diag(1000, 0.001), B = ∇²f + I.
+    해는 W에 Wy = s로만 의존하므로 Ḡ_k는 계산하지 않는다.
+  - BFGS vs DFP 실험 (strong Wolfe, c₂ = 0.9, α = 1 먼저): quadratic n = 10, eigenvalues 1–100,
+    H₀ = 10⁻⁴I에서 94 vs >5000, 10⁻²I에서 45 vs 249, I에서 11 vs 15; Rosenbrock H₀ = I에서 34 vs 84
+    (BFGS 34는 책 p. 141과 일치). 이유: DFP는 B를 최소로 바꾸므로 B가 너무 큰 오류(짧은 step)가 남고,
+    line search는 이를 고치지 못한다. BFGS가 남기는 H의 오류(긴 step)는 line search가 줄인다.
+- (6.13) 유도는 W^{1/2} 변수 변환 → B̂u = u → projection 세 단계로 학생에게 공부용으로 낸다.
 
 ### Ch. 7
 - 수업: 10월 27일 §7.1, 29일 §7.2. §7.3–7.4는 "왜 넘기는가"만 말한다
