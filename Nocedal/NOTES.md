@@ -106,6 +106,13 @@ Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
 - Ch. 19가 Ch. 16, 18에서 가져오는 것도 있다: KKT matrix와 symmetric indefinite factorization (16.7), (16.12),
   Hessian 수정·inertia, damped BFGS (18.14)–(18.15), penalty parameter ν 갱신. 덱에서는 결과만 한 줄씩 서술한다.
 - 형식은 ch05v3 서식, 30장 안팎. 기존 ch19.pdf는 지우지 않는다.
+- Lemma 16.3 (§16.2)을 inertia 슬라이드에 넣는다: inertia(K) = inertia(ZᵀGZ) + (m, m, 0).
+  §19.3이 inertia correction의 근거로 인용하고, IPOPT가 factorization에서 inertia를 보고 δ를 더하는 이유다.
+  Inertia를 LDLᵀ에서 읽는 것은 §3.4와 Appendix A(Bunch–Kaufman)로 이미 수업 범위다.
+- 책 안에서 IPOPT가 쓰지만 수업 밖인 나머지 (넣지 않고 언급만):
+  §14.2 Mehrotra predictor-corrector (`mu_strategy adaptive`일 때만), (18.14)–(18.15) damped BFGS (L-BFGS 옵션일 때만),
+  (18.12) elastic mode·§17.2 ℓ₁ penalty (IPOPT restoration phase가 푸는 문제와 비슷한 형태).
+- 위 Ch. 15 부분과 Lemma 16.3을 넣으면 IPOPT 기본 설정의 log는 책 내용으로 설명된다.
 
 
 ### Ch. 16, 18 (수업 범위 밖, FREEDOM용)
