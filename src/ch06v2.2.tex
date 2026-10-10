@@ -1,0 +1,640 @@
+%=====================================================================
+%  Advanced Optimization  --  Chapter 6  (12pt edition)
+%  Nocedal & Wright, Chapter 6: Quasi-Newton Methods
+%  6.1 BFGS (secant equation, DFP, BFGS, properties, implementation)
+%  6.2 SR1 (derivation, skipping rule, trust-region algorithm, Thm 6.1-6.2)
+%  6.3 Broyden class (Thm 6.3-6.4)
+%  6.4 convergence analysis (Thm 6.5-6.7)
+%
+%  Layout rules for this deck (28 slides)
+%   - body 12pt; nothing in the body below 10pt; footline 8pt
+%   - one theorem per slide, or at most three displayed equations
+%   - proofs are omitted; a red "Read:" pointer gives the pages in the book
+%   - equation numbers and theorem statements follow the book
+%   - material that is not in the book is marked "(Not in the book.)"
+%   - no [shrink] option anywhere
+%=====================================================================
+\documentclass[aspectratio=169,12pt]{beamer}
+
+\usetheme{default}
+\usecolortheme{seahorse}
+\useinnertheme{rectangles}
+\setbeamersize{text margin left=7mm,text margin right=7mm}
+\setbeamertemplate{navigation symbols}{}
+\setbeamerfont{title}{series=\bfseries,size=\LARGE}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{institute}{size=\small}
+\setbeamerfont{frametitle}{series=\bfseries,size=\large}
+\setbeamerfont{block title}{series=\bfseries,size=\normalsize}
+\setbeamerfont{footline}{size=\scriptsize}   % 8pt at 12pt base
+\setbeamercolor{frametitle}{fg=black!85,bg=black!5}
+\setbeamercolor{block title}{bg=structure!25,fg=black!85}
+\setbeamercolor{block body}{bg=structure!8}
+\setbeamercolor{alerted text}{fg=red!65!black}
+\setbeamercolor{footline}{fg=black!60}
+\setbeamertemplate{itemize item}{\small$\blacktriangleright$}
+\setbeamertemplate{itemize subitem}{\footnotesize$-$}
+\setbeamertemplate{enumerate items}[default]
+\setbeamerfont{enumerate item}{size=\normalsize,series=\bfseries}
+\setbeamertemplate{footline}{%
+  \leavevmode\hbox to\paperwidth{\hskip7mm\usebeamerfont{footline}\usebeamercolor[fg]{footline}%
+  \insertsection\hfill\insertframenumber\,/\,\inserttotalframenumber\hskip7mm}\vskip2.2mm}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+% no math subscript below 8pt, also inside \small and \footnotesize text
+\DeclareMathSizes{12}{12}{8}{8}
+\DeclareMathSizes{10.95}{10.95}{8}{8}
+\DeclareMathSizes{10}{10}{8}{8}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\xs}{x^{*}}
+\newcommand{\gradf}{\nabla f}
+\newcommand{\hessf}{\nabla^{2} f}
+\newcommand{\Gbar}{\bar{G}}
+\newcommand{\Lcal}{\mathcal{L}}
+\newcommand{\tr}{\operatorname{trace}}
+\newcommand{\la}{\leftarrow}
+\newcommand{\eqn}[1]{\text{\small(#1)}}
+% reading pointer to the book (page numbers: Nocedal & Wright, 2nd ed.)
+\newcommand{\readbook}[1]{{\color{red}\textbf{Read:} #1}}
+% marker for material that is not in the book
+\newcommand{\notinbook}{{\small(Not in the book.)}}
+% labelled item with hanging indent, for long theorem statements
+\newcommand{\thmitem}[2]{\par\vspace{0.2em}\noindent\hangindent=2.7em\hangafter=1\makebox[2.7em][l]{#1}#2}
+% algorithm listing: statement | equation number
+\newenvironment{algo}{\par\renewcommand{\arraystretch}{1.12}%
+  \begin{tabular}{@{}l@{\hspace{2.2em}}l@{}}}{\end{tabular}\par}
+
+\title{Advanced Optimization}
+\subtitle{Chapter 6 --- Quasi-Newton Methods}
+\author{Hongseok Kim}
+\institute{Department of Electronic Engineering, Sogang University}
+\date{Fall 2026}
+
+
+\begin{document}
+
+\section{Chapter 6: introduction}
+
+\begin{frame}
+  \titlepage
+  \begin{center}\small
+    Reading: Nocedal \& Wright, \emph{Numerical Optimization}, 2nd ed., Chapter 6
+  \end{center}
+\end{frame}
+
+\begin{frame}{Quasi-Newton methods}
+  \begin{itemize}\setlength\itemsep{0.5em}
+    \item Mid 1950s, W.\,C.~Davidon (Argonne National Laboratory): the first
+      quasi-Newton algorithm, developed to accelerate a coordinate descent calculation.
+    \item Fletcher and Powell: much faster and more reliable than the existing methods.
+      Davidon's paper was not accepted for publication; it appeared in 1991.
+  \end{itemize}
+
+  \vspace{0.3em}
+  \begin{block}{The idea}
+    Like steepest descent, use \alert{only the gradient} at each iterate. Measure the
+    \alert{changes in gradients} and build from them a model of $f$ that is good enough to
+    give \alert{superlinear convergence}.
+  \end{block}
+
+  \vspace{0.3em}
+  No second derivatives are needed. This chapter: small and medium-sized problems.
+\end{frame}
+
+%=====================================================================
+\section{\S6.1 BFGS: the secant equation}
+
+\begin{frame}{The quadratic model and the iteration}
+  Model of $f$ at the current iterate $x_{k}$:
+  \[ m_{k}(p)=f_{k}+\gradf_{k}^{T}p+\tfrac12p^{T}B_{k}p . \tag{6.1} \]
+  $B_{k}$ is an $n\times n$ symmetric positive definite matrix, \alert{updated} at every
+  iteration. The minimizer of $m_{k}$ is the search direction:
+  \[
+    p_{k}=-B_{k}^{-1}\gradf_{k}\ \ \eqn{6.2},
+    \qquad\qquad
+    x_{k+1}=x_{k}+\alpha_{k}p_{k}\ \ \eqn{6.3},
+  \]
+  where $\alpha_{k}$ satisfies the Wolfe conditions (3.6).
+
+  \vspace{0.2em}
+  \begin{itemize}\setlength\itemsep{0.25em}
+    \item This is the line search Newton method with $B_{k}$ in place of the true Hessian.
+    \item Direction from the model $m_{k}$; step length from $f$ itself (Wolfe).
+    \item $B_{k}$ is updated using the curvature measured during the most recent step.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{The secant equation}
+  New model at $x_{k+1}$:\quad
+  $m_{k+1}(p)=f_{k+1}+\gradf_{k+1}^{T}p+\tfrac12p^{T}B_{k+1}p$.
+
+  \vspace{0.3em}
+  Requirement: $\nabla m_{k+1}$ matches $\gradf$ at the latest two iterates $x_{k}$ and $x_{k+1}$.\\
+  At $x_{k+1}$: $\nabla m_{k+1}(0)=\gradf_{k+1}$, automatically. At $x_{k}$:
+  \[
+    \nabla m_{k+1}(-\alpha_{k}p_{k})=\gradf_{k+1}-\alpha_{k}B_{k+1}p_{k}=\gradf_{k}
+    \ \ \Longrightarrow\ \
+    B_{k+1}\alpha_{k}p_{k}=\gradf_{k+1}-\gradf_{k} .
+    \tag{6.4}
+  \]
+
+  \begin{block}{Secant equation}
+    \[ s_{k}=x_{k+1}-x_{k}=\alpha_{k}p_{k},\qquad y_{k}=\gradf_{k+1}-\gradf_{k}, \tag{6.5} \]
+    \[ B_{k+1}s_{k}=y_{k} . \tag{6.6} \]
+  \end{block}
+\end{frame}
+
+\begin{frame}{The curvature condition}
+  Premultiply (6.6) by $s_{k}^{T}$: a positive definite $B_{k+1}$ can map $s_{k}$ into $y_{k}$ only if
+  \[ s_{k}^{T}y_{k}>0 . \tag{6.7} \]
+
+  \begin{itemize}\setlength\itemsep{0.3em}
+    \item $f$ strongly convex: (6.7) holds for any two points $x_{k}$, $x_{k+1}$ (Exercise 6.1).
+    \item $f$ nonconvex: (6.7) must be enforced by the line search.
+  \end{itemize}
+
+  \vspace{0.2em}
+  \begin{alertblock}{The Wolfe conditions (3.6), or strong Wolfe (3.7), guarantee (6.7)}
+    From (6.5) and (3.6b), $\gradf_{k+1}^{T}s_{k}\ge c_{2}\gradf_{k}^{T}s_{k}$, and therefore
+    \[ y_{k}^{T}s_{k}\ \ge\ (c_{2}-1)\,\alpha_{k}\gradf_{k}^{T}p_{k} . \tag{6.8} \]
+    Since $c_{2}<1$ and $p_{k}$ is a descent direction, the right-hand side is positive.
+  \end{alertblock}
+\end{frame}
+
+%=====================================================================
+\section{\S6.1 BFGS: the DFP and BFGS updates}
+
+\begin{frame}{Determining $B_{k+1}$ uniquely}
+  When (6.7) holds, the secant equation (6.6) has infinitely many solutions: a symmetric
+  matrix has $n(n+1)/2$ degrees of freedom, and the secant equation imposes $n$ conditions.
+
+  \vspace{0.7em}
+  Additional condition: among all symmetric matrices satisfying the secant equation,
+  $B_{k+1}$ is \alert{closest to the current matrix $B_{k}$}:
+  \begin{align}
+    \min_{B}\quad & \|B-B_{k}\| \tag{6.9a}\\
+    \text{subject to}\quad & B=B^{T},\qquad Bs_{k}=y_{k} . \tag{6.9b}
+  \end{align}
+
+  \vspace{0.3em}
+  Each matrix norm in (6.9a) gives a different quasi-Newton method.
+\end{frame}
+
+\begin{frame}{The weighted Frobenius norm}
+  \[
+    \|A\|_{W}\equiv\big\|W^{1/2}AW^{1/2}\big\|_{F},
+    \qquad \|C\|_{F}^{2}=\textstyle\sum_{i=1}^{n}\sum_{j=1}^{n}c_{ij}^{2} .
+    \tag{6.10}
+  \]
+  $W$ can be \emph{any} matrix satisfying $Wy_{k}=s_{k}$.
+  For concreteness, $W=\Gbar_{k}^{-1}$, where $\Gbar_{k}$ is the \textbf{average Hessian}
+  \[ \Gbar_{k}=\Big[\int_{0}^{1}\hessf(x_{k}+\tau\alpha_{k}p_{k})\,d\tau\Big] . \tag{6.11} \]
+  By Taylor's theorem (Theorem 2.1),\quad
+  $y_{k}=\Gbar_{k}\alpha_{k}p_{k}=\Gbar_{k}s_{k}$ \eqn{6.12}.
+
+  \vspace{0.5em}
+  With this $W$ the norm is non-dimensional: the solution of (6.9) does not depend on the
+  units of the problem.
+\end{frame}
+
+\begin{frame}{Why a weighted norm? \notinbook}
+  $\|\cdot\|_{W}$ is an error metric that takes the curvature into account.
+
+  \vspace{0.4em}
+  Example: $\hessf=\mathrm{diag}(1000,\,0.001)$ and $B=\hessf+I$.
+  \begin{itemize}\setlength\itemsep{0.3em}
+    \item Direction $e_{1}$: curvature $1001$ instead of $1000$. The step is almost exact.
+    \item Direction $e_{2}$: curvature $1.001$ instead of $0.001$. The step is $1000$ times too short.
+  \end{itemize}
+  The Frobenius norm gives both errors the size $1$. With $W=\hessf^{-1}$ they have sizes
+  $10^{-3}$ and $10^{3}$, in proportion to their effect on the step.
+
+  \vspace{0.4em}
+  Equivalently: in the variables $z=\Gbar_{k}^{1/2}x$ the curvature is $I$ in every direction, and
+  $\|\cdot\|_{W}$ is the ordinary Frobenius norm there.
+  The solution of (6.9) depends on $W$ only through $Wy_{k}=s_{k}$, so $\Gbar_{k}$ is never computed.
+\end{frame}
+
+\begin{frame}{The DFP update}
+  The unique solution of (6.9) in the norm (6.10), with $\rho_{k}=1/(y_{k}^{T}s_{k})$ \eqn{6.14}:
+  \[
+    \text{(DFP)}\qquad
+    B_{k+1}=\big(I-\rho_{k}y_{k}s_{k}^{T}\big)B_{k}\big(I-\rho_{k}s_{k}y_{k}^{T}\big)+\rho_{k}y_{k}y_{k}^{T} .
+    \tag{6.13}
+  \]
+  With $H_{k}=B_{k}^{-1}$ the direction (6.2) is a matrix--vector product. By the
+  Sherman--Morrison--Woodbury formula (A.28):
+  \[
+    \text{(DFP)}\qquad
+    H_{k+1}=H_{k}-\frac{H_{k}y_{k}y_{k}^{T}H_{k}}{y_{k}^{T}H_{k}y_{k}}+\frac{s_{k}s_{k}^{T}}{y_{k}^{T}s_{k}} .
+    \tag{6.15}
+  \]
+
+  \begin{itemize}\setlength\itemsep{0.3em}
+    \item Davidon (1959); Fletcher and Powell. Both formulas are \alert{rank-two} modifications:
+      the matrix is not recomputed from scratch.
+    \item The book states (6.13) without derivation. \readbook{pp.~138--139.}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{The BFGS update}
+  Apply the same argument to $H_{k}$ instead of $B_{k}$. The secant equation is now
+  $H_{k+1}y_{k}=s_{k}$:
+  \begin{align}
+    \min_{H}\quad & \|H-H_{k}\| \tag{6.16a}\\
+    \text{subject to}\quad & H=H^{T},\qquad Hy_{k}=s_{k} . \tag{6.16b}
+  \end{align}
+  Norm (6.10), now with $Ws_{k}=y_{k}$. The unique solution, with $\rho_{k}$ from (6.14):
+
+  \begin{block}{}
+    \[
+      \text{(BFGS)}\qquad
+      H_{k+1}=\big(I-\rho_{k}s_{k}y_{k}^{T}\big)H_{k}\big(I-\rho_{k}y_{k}s_{k}^{T}\big)+\rho_{k}s_{k}s_{k}^{T} .
+      \tag{6.17}
+    \]
+  \end{block}
+
+  Broyden, Fletcher, Goldfarb, Shanno. Considered the most effective update.
+\end{frame}
+
+\begin{frame}{BFGS in terms of $B_{k}$; duality}
+  Applying the Sherman--Morrison--Woodbury formula (A.28) to (6.17):
+  \[
+    \text{(BFGS)}\qquad
+    B_{k+1}=B_{k}-\frac{B_{k}s_{k}s_{k}^{T}B_{k}}{s_{k}^{T}B_{k}s_{k}}+\frac{y_{k}y_{k}^{T}}{y_{k}^{T}s_{k}} .
+    \tag{6.19}
+  \]
+
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.60\textwidth}
+      \textbf{Duality.} The DFP and BFGS formulae are obtained from each other by the
+      interchanges
+      \[ s\leftrightarrow y,\qquad B\leftrightarrow H . \]
+    \end{column}
+    \begin{column}{0.36\textwidth}
+      \begin{center}
+      \begin{tabular}{lcc}
+        \toprule
+        & $B_{k+1}$ & $H_{k+1}$ \\
+        \midrule
+        DFP & (6.13) & (6.15) \\
+        BFGS & (6.19) & (6.17) \\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.5em}
+  Working with $B_{k}$: solving $B_{k}p_{k}=-\gradf_{k}$ costs $O(n^{3})$. Updating the factors
+  $L_{k}D_{k}L_{k}^{T}$ of $B_{k}$ costs $O(n^{2})$, with no real advantage over Algorithm 6.1 in practice.
+\end{frame}
+
+\begin{frame}{Algorithm 6.1 (BFGS method)}
+  \begin{block}{}
+    \begin{algo}
+      Given starting point $x_{0}$, convergence tolerance $\epsilon>0$, & \\
+      \qquad inverse Hessian approximation $H_{0}$;\ \ $k\la 0$ & \\
+      \textbf{while} $\|\gradf_{k}\|>\epsilon$ & \\
+      \qquad compute the search direction $p_{k}=-H_{k}\gradf_{k}$ & \eqn{6.18}\\
+      \qquad set $x_{k+1}=x_{k}+\alpha_{k}p_{k}$, where $\alpha_{k}$ satisfies the Wolfe conditions (3.6) & \\
+      \qquad define $s_{k}=x_{k+1}-x_{k}$ and $y_{k}=\gradf_{k+1}-\gradf_{k}$ & \\
+      \qquad compute $H_{k+1}$ by means of (6.17);\ \ $k\la k+1$ & \\
+    \end{algo}
+  \end{block}
+
+  \begin{itemize}\setlength\itemsep{0.3em}
+    \item Cost per iteration: \alert{$O(n^{2})$} arithmetic operations. No linear system is solved.
+    \item Rate: superlinear. Newton's method is quadratic, but each iteration needs second
+      derivatives and the solution of a linear system.
+  \end{itemize}
+\end{frame}
+
+%=====================================================================
+\section{\S6.1 BFGS: properties and implementation}
+
+\begin{frame}{Numerical example: Rosenbrock's function (2.22)}
+  Starting point $(-1.2,1)$. Wolfe conditions on the step length in all three methods.
+
+  \vspace{0.3em}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.40\textwidth}
+      \begin{center}
+      Iterations until $\|\gradf_{k}\|\le 10^{-5}$\\[0.4em]
+      \begin{tabular}{lr}
+        \toprule
+        steepest descent & 5264 \\
+        BFGS & 34 \\
+        Newton (inexact) & 21 \\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+    \end{column}
+    \begin{column}{0.56\textwidth}
+      \begin{center}
+      Last four values of $\|x_{k}-\xs\|$\\[0.4em]
+      \begin{tabular}{ccc}
+        \toprule
+        steepest descent & BFGS & Newton \\
+        \midrule
+        1.827e-04 & 1.70e-03 & 3.48e-02 \\
+        1.826e-04 & 1.17e-03 & 1.44e-02 \\
+        1.824e-04 & 1.34e-04 & 1.82e-04 \\
+        1.823e-04 & 1.01e-06 & 1.17e-08 \\
+        \bottomrule
+      \end{tabular}
+      \end{center}
+    \end{column}
+  \end{columns}
+
+  \vspace{0.7em}
+  The superlinear rate of BFGS is visible in the last iterations.
+  \readbook{p.~141.}
+\end{frame}
+
+\begin{frame}{Properties of the BFGS method}
+  \begin{block}{Positive definiteness is preserved}
+    Let $H_{k}$ be positive definite and $y_{k}^{T}s_{k}>0$. For any nonzero $z$,
+    \[
+      z^{T}H_{k+1}z=w^{T}H_{k}w+\rho_{k}(z^{T}s_{k})^{2}\ \ge 0,
+      \qquad w=z-\rho_{k}y_{k}(s_{k}^{T}z) .
+    \]
+    Zero only if $s_{k}^{T}z=0$; then $w=z\ne 0$ and the first term is positive.
+    Hence $H_{k+1}$ is positive definite.
+  \end{block}
+
+  \textbf{Self-correction.}\hfill\readbook{pp.~141--142.}
+  \begin{itemize}\setlength\itemsep{0.25em}
+    \item If $H_{k}$ estimates the curvature incorrectly and this slows down the iteration,
+      $H_{k}$ tends to correct itself within a few steps. DFP is less effective at this.
+    \item The property holds only with an adequate line search (Wolfe).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{BFGS versus DFP \notinbook}
+  Iterations; strong Wolfe line search ($c_{1}=10^{-4}$, $c_{2}=0.9$), $\alpha=1$ tried first.
+  \vspace{-0.4em}
+  \begin{center}
+  \setlength\tabcolsep{8pt}
+  \begin{tabular}{llrr}
+    \toprule
+    $f$ & $H_{0}$ & BFGS & DFP \\
+    \midrule
+    quadratic, $n=10$, & $10^{-4}I$ & 94 & $>5000$ \\
+    \quad eigenvalues $1$ to $100$, & $10^{-2}I$ & 45 & 249 \\
+    \quad $\|\gradf_{k}\|<10^{-8}$ & $I$ & 11 & 15 \\
+    Rosenbrock (2.22), $\|\gradf_{k}\|<10^{-5}$ & $I$ & 34 & 84 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+  \begin{itemize}\setlength\itemsep{0.25em}
+    \item DFP changes $B$ minimally, so $B_{k}$ too large (steps too short) persists; a line
+      search starting at $\alpha=1$ does not repair this.
+    \item BFGS changes $H$ minimally: $H_{k}$ too large (steps too long) is fixed by the line search.
+    \item Theorem 6.5 extends to $\phi_{k}\in[0,1)$ in (6.32), \alert{but not to DFP} ($\phi_{k}=1$).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Implementation: the line search}
+  \begin{itemize}\setlength\itemsep{0.7em}
+    \item Use the Wolfe conditions (3.6) or the strong Wolfe conditions (3.7), and
+      \alert{always try $\alpha_{k}=1$ first}. This step length will eventually always be accepted
+      (under certain conditions), which gives superlinear convergence.
+    \item A fairly inaccurate line search is more economical in function evaluations.
+      Commonly used: $c_{1}=10^{-4}$, $c_{2}=0.9$.
+    \item Armijo backtracking from $\alpha=1$ does not guarantee $y_{k}^{T}s_{k}>0$: a step length
+      greater than $1$ may be required.
+    \item Skipping the update ($H_{k+1}=H_{k}$) when $y_{k}^{T}s_{k}$ is negative or too close to zero
+      is \alert{not recommended}: the updates may be skipped much too often.
+  \end{itemize}
+
+  \vspace{0.5em}
+  \readbook{pp.~142--143.}
+\end{frame}
+
+\begin{frame}{Implementation: the initial matrix $H_{0}$}
+  $H_{0}=\beta I$: there is no good general strategy for choosing $\beta$.\\[0.3em]
+  Heuristic: scale $H_{0}$ \emph{after} the first step has been computed and \emph{before} the
+  first update:
+  \[ H_{0}\la\frac{y_{k}^{T}s_{k}}{y_{k}^{T}y_{k}}\,I . \tag{6.20} \]
+  The factor approximates an eigenvalue of $\hessf(x_{k})^{-1}$, so (6.20) makes the size of $H_{0}$
+  similar to that of $\hessf(x_{0})^{-1}$. \readbook{(6.21), p.~143.}
+
+  \vspace{0.6em}
+  \notinbook\ With (6.20), the number of BFGS iterations hardly depends on the initial $\beta$:
+  on the quadratic in the BFGS-versus-DFP table, 43--44 iterations for $\beta=10^{-4},10^{-2},1$
+  (without (6.20): 94, 45, 11). (6.20) removes the choice of $\beta$; it does not always reduce the
+  iteration count.
+\end{frame}
+
+%=====================================================================
+\section{\S6.2 SR1}
+
+\begin{frame}{The SR1 formulas}
+  The only symmetric rank-one update that satisfies the secant equation:
+  \[
+    \text{(SR1)}\qquad
+    B_{k+1}=B_{k}+\frac{(y_{k}-B_{k}s_{k})(y_{k}-B_{k}s_{k})^{T}}{(y_{k}-B_{k}s_{k})^{T}s_{k}} .
+    \tag{6.24}
+  \]
+  By the Sherman--Morrison formula (A.27):
+  \[
+    \text{(SR1)}\qquad
+    H_{k+1}=H_{k}+\frac{(s_{k}-H_{k}y_{k})(s_{k}-H_{k}y_{k})^{T}}{(s_{k}-H_{k}y_{k})^{T}y_{k}} .
+    \tag{6.25}
+  \]
+
+  \begin{itemize}\setlength\itemsep{0.3em}
+    \item Even if $B_{k}$ is positive definite, $B_{k+1}$ \alert{may not be}. With trust-region
+      methods, the ability to generate indefinite approximations is a chief advantage.
+    \item Main drawback: \alert{the denominator can vanish}, even for a convex quadratic.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Why SR1 is still of interest}
+  \begin{enumerate}\setlength\itemsep{0.5em}
+    \item[(i)] A simple safeguard prevents breakdown and numerical instabilities.
+    \item[(ii)] The matrices generated by the SR1 formula tend to be \alert{good approximations
+      to the true Hessian matrix}, often better than the BFGS approximations.
+    \item[(iii)] In quasi-Newton methods for constrained problems, and for partially
+      separable functions, it may not be possible to impose the curvature condition
+      $y_{k}^{T}s_{k}>0$, so BFGS updating is not recommended. In these settings indefinite
+      Hessian approximations are desirable insofar as they reflect indefiniteness in the
+      true Hessian.
+  \end{enumerate}
+
+  \vspace{0.2em}
+  $B_{k}$ may be indefinite, so SR1 is used with a \alert{trust region} (Algorithm 6.2), not a line search.
+  \readbook{pp.~145--149 (Algorithm 6.2, Theorems 6.1, 6.2).}
+\end{frame}
+
+\begin{frame}{The skipping rule}
+  \begin{block}{Safeguard}
+    Apply the update (6.24) only if
+    \[ \big|s_{k}^{T}(y_{k}-B_{k}s_{k})\big|\ \ge\ r\,\|s_{k}\|\,\|y_{k}-B_{k}s_{k}\| , \tag{6.26} \]
+    where $r\in(0,1)$ is a small number, say $r=10^{-8}$. Otherwise set $B_{k+1}=B_{k}$.
+  \end{block}
+
+  If $y_{k}\ne B_{k}s_{k}$ but $(y_{k}-B_{k}s_{k})^{T}s_{k}=0$, \alert{no} SR1 update exists.
+  Why is skipping acceptable for SR1, but not for BFGS?
+  \begin{itemize}\setlength\itemsep{0.35em}
+    \item \textbf{SR1.} $s_{k}^{T}(y_{k}-B_{k}s_{k})\approx 0$ occurs infrequently. It implies
+      $s_{k}^{T}\Gbar s_{k}\approx s_{k}^{T}B_{k}s_{k}$: the curvature of $B_{k}$ along $s_{k}$ is already correct.
+    \item \textbf{BFGS.} Without Wolfe, $s_{k}^{T}y_{k}>0$ fails easily; skipping can occur often.
+  \end{itemize}
+\end{frame}
+
+%=====================================================================
+\section{\S6.3 The Broyden class}
+
+\begin{frame}{The Broyden class}
+  A family of updates with a scalar parameter $\phi_{k}$:
+  \[
+    B_{k+1}=B_{k}-\frac{B_{k}s_{k}s_{k}^{T}B_{k}}{s_{k}^{T}B_{k}s_{k}}+\frac{y_{k}y_{k}^{T}}{y_{k}^{T}s_{k}}
+    +\phi_{k}\,(s_{k}^{T}B_{k}s_{k})\,v_{k}v_{k}^{T},
+    \tag{6.32}
+  \]
+  \[
+    v_{k}=\Big[\frac{y_{k}}{y_{k}^{T}s_{k}}-\frac{B_{k}s_{k}}{s_{k}^{T}B_{k}s_{k}}\Big] .
+    \tag{6.33}
+  \]
+  $\phi_{k}=0$: BFGS.\quad $\phi_{k}=1$: DFP.\quad Equivalently,
+  $B_{k+1}=(1-\phi_{k})B_{k+1}^{\mathrm{BFGS}}+\phi_{k}B_{k+1}^{\mathrm{DFP}}$.
+  All members satisfy the secant equation (6.6).
+  \textbf{Restricted Broyden class:} $\phi_{k}\in[0,1]$; positive definiteness is preserved when
+  $s_{k}^{T}y_{k}>0$. \readbook{Theorems 6.3, 6.4 (quadratic $f$), pp.~150--152.}
+\end{frame}
+
+%=====================================================================
+\section{\S6.4 Convergence analysis}
+
+\begin{frame}{What is proved, and what is not}
+  \begin{itemize}\setlength\itemsep{0.45em}
+    \item BFGS and SR1 are remarkably robust in practice. For general nonlinear $f$,
+      however, global convergence is not established: ``it is not yet known if the
+      algorithms enjoy such properties'' (p.~153).
+    \item \notinbook\ For nonconvex $f$ the BFGS iterates can fail to converge: examples of
+      Dai (2002, Wolfe line search) and Mascarenhas (2004, exact line search).
+    \item The analysis assumes that $f$ is convex, or that the iterates satisfy certain
+      properties. Tools: the trace and the determinant of $B_{k}$, combined in
+  \end{itemize}
+  \[ \psi(B)=\tr(B)-\ln(\det(B)) . \tag{6.49} \]
+
+  \vspace{0.2em}
+  Notation of \S6.4: $\|\cdot\|$ is the Euclidean vector or matrix norm; $G(x)=\hessf(x)$.
+\end{frame}
+
+\begin{frame}{Global convergence of BFGS: Theorem 6.5}
+  \begin{block}{Assumption 6.1}
+    \begin{enumerate}\setlength\itemsep{0.1em}
+      \item[(i)] The objective function $f$ is twice continuously differentiable.
+      \item[(ii)] The level set $\Lcal=\{x\in\R^{n}\,|\,f(x)\le f(x_{0})\}$ is convex, and there exist
+        positive constants $m$ and $M$ such that
+        $\ m\|z\|^{2}\le z^{T}G(x)z\le M\|z\|^{2}$ \eqn{6.39}
+        for all $z\in\R^{n}$ and $x\in\Lcal$.
+    \end{enumerate}
+  \end{block}
+
+  \begin{block}{Theorem 6.5}
+    Let $B_{0}$ be any symmetric positive definite initial matrix, and let $x_{0}$ be a starting
+    point for which Assumption 6.1 is satisfied. Then the sequence $\{x_{k}\}$ generated by
+    Algorithm 6.1 (with $\epsilon=0$) converges to the minimizer $\xs$ of $f$.
+  \end{block}
+
+  \readbook{proof of Theorem 6.5, pp.~154--156.}
+\end{frame}
+
+\begin{frame}{Superlinear convergence of BFGS: Theorem 6.6}
+  \begin{block}{Assumption 6.2}
+    The Hessian matrix $G$ is Lipschitz continuous at $\xs$, that is,
+    \[ \|G(x)-G(\xs)\|\le L\|x-\xs\| , \]
+    for all $x$ near $\xs$, where $L$ is a positive constant.
+  \end{block}
+
+  \begin{block}{Theorem 6.6}
+    Suppose that $f$ is twice continuously differentiable and that the iterates generated by
+    the BFGS algorithm converge to a minimizer $\xs$ at which Assumption 6.2 holds. Suppose
+    also that (6.52) holds. Then $x_{k}$ converges to $\xs$ at a superlinear rate.
+  \end{block}
+
+  \readbook{proof of Theorem 6.6, pp.~157--160.}
+\end{frame}
+
+\begin{frame}{Reading Theorem 6.6}
+  \begin{itemize}\setlength\itemsep{0.45em}
+    \item Applies to general nonlinear $f$, not just convex $f$; $x_{k}\to\xs$ is an assumption.
+    \item With $G_{*}=G(\xs)$, the proof establishes
+  \end{itemize}
+  \[ \lim_{k\to\infty}\frac{\|(B_{k}-G_{*})s_{k}\|}{\|s_{k}\|}=0 . \]
+  \begin{itemize}\setlength\itemsep{0.45em}
+    \item This is the Dennis--Mor\'e characterization (3.36). By Theorem 3.6, the unit step
+      length $\alpha_{k}=1$ satisfies the Wolfe conditions near the solution, and the rate of
+      convergence is superlinear.
+    \item \alert{$B_{k}\to\hessf(\xs)$ is not required.} It suffices that $B_{k}$ becomes increasingly
+      accurate along the search directions (p.~47).
+  \end{itemize}
+  \readbook{SR1: Theorem 6.7, pp.~160--161.}
+\end{frame}
+
+%=====================================================================
+\section{Chapter 6: summary}
+
+\begin{frame}{Chapter 6 in one table}
+  \begin{center}
+  \small\setlength\tabcolsep{5pt}
+  \begin{tabular}{llll}
+    \toprule
+    & BFGS & DFP & SR1 \\
+    \midrule
+    Update & rank two & rank two & rank one \\
+    Obtained from & (6.16), closest $H$ & (6.9), closest $B$ & (6.24) \\
+    Positive definite & if $s_{k}^{T}y_{k}>0$ & if $s_{k}^{T}y_{k}>0$ & not guaranteed \\
+    Breakdown & no & no & possible; skip by (6.26) \\
+    Self-correction & very effective & less effective & --- \\
+    Framework & line search & line search & trust region \\
+    $\phi_{k}$ in (6.32) & $0$ & $1$ & may be outside $[0,1]$ \\
+    Global convergence & Thm.~6.5 (convex $f$) & not in Thm.~6.5 & Thm.~6.7 \\
+    Rate & superlinear (Thm.~6.6) & --- & $(n{+}1)$-step superlinear \\
+    $B_{k}\to\hessf(\xs)$ & not required & --- & Thm.~6.2 \\
+    \bottomrule
+  \end{tabular}
+  \end{center}
+
+\end{frame}
+
+\begin{frame}{Three results to carry forward}
+  \begin{enumerate}\setlength\itemsep{0.7em}
+    \item \textbf{The secant equation $B_{k+1}s_{k}=y_{k}$.} Curvature information is obtained from
+      differences of gradients. The update costs $O(n^{2})$; no second derivatives and no
+      linear system.
+    \item \textbf{The Wolfe conditions are part of the BFGS method.} They guarantee
+      $s_{k}^{T}y_{k}>0$, which keeps $H_{k}$ positive definite and $p_{k}$ a descent direction.
+      Self-correction also depends on them.
+    \item \textbf{Superlinear convergence does not require $B_{k}\to\hessf(\xs)$.} Accuracy along the
+      search directions is enough (BFGS, Theorem 6.6). SR1 does approximate the
+      Hessian (Theorems 6.1, 6.2) and allows indefinite $B_{k}$ within a trust region.
+  \end{enumerate}
+
+  \vspace{0.8em}
+  Proved in the book: Theorems 6.1, 6.5, 6.6.\\ Stated without proof: Theorems 6.2, 6.3, 6.4, 6.7.
+\end{frame}
+
+\begin{frame}{Homework {\normalfont\small(problems 3--5 are not in the book)}}
+  \begin{enumerate}\setlength\itemsep{0.5em}
+    \item Exercise 6.1(a): if $f$ is strongly convex, then (6.7) holds for any $x_{k}$ and $x_{k+1}$.
+    \item Exercise 6.2: the second strong Wolfe condition (3.7b) implies (6.7).
+    \item By hand. $f(x)=\tfrac12x^{T}Ax-b^{T}x$,
+      $A=\begin{bmatrix}2&1\\1&2\end{bmatrix}$, $b=\begin{bmatrix}1\\0\end{bmatrix}$, $x_{0}=0$,
+      $H_{0}=I$. Run two iterations of Algorithm 6.1 with exact line searches.
+      Check that $H_{1}y_{0}=s_{0}$, $x_{2}=\xs$, $H_{2}=A^{-1}$.
+    \item By hand. $B_{k}=I$, $s_{k}=(1,0)^{T}$, $y_{k}=(-1,0)^{T}$. Compute $B_{k+1}$ from (6.24).
+      Is it positive definite? Why can the BFGS update not be used here?
+    \item Implement Algorithm 6.1 with the scaling (6.20) and a library Wolfe line search.
+      Minimize Rosenbrock's function (2.22) from $(-1.2,1)$. Compare the last four values
+      of $\|x_{k}-\xs\|$ with the table on p.~141.
+  \end{enumerate}
+\end{frame}
+
+\end{document}
