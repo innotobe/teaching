@@ -1,0 +1,134 @@
+%=====================================================================
+%  Advanced Optimization (Fall 2026) -- Midterm Examination (exam only; model answers kept out of this public repo)
+%  Nocedal & Wright, Numerical Optimization, 2nd ed., Chapters 2-6
+%  Five questions, one per chapter, no sub-parts. Each question is anchored in a
+%  small example that is not in the book, so the book helps but does not answer it.
+%=====================================================================
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\setlist[enumerate,1]{label=\textbf{A\arabic*.}, leftmargin=2.6em, itemsep=2pt}
+\usepackage{fancyhdr}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\T}{^{\mathsf T}}
+\newcommand{\gradf}{\nabla f}
+\newcommand{\hessf}{\nabla^{2} f}
+\DeclareMathOperator{\diag}{diag}
+
+\newcommand{\versionlabel}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Advanced Optimization --- Midterm \versionlabel}
+\rhead{Fall 2026, Sogang University}
+\cfoot{\thepage}
+
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries Advanced Optimization --- Midterm Examination \versionlabel}\\[4pt]
+  Fall 2026 \quad $\cdot$ \quad 75 minutes \quad $\cdot$ \quad Part A: 20 true/false \quad $\cdot$ \quad Part B: 4 questions
+\end{center}
+
+\medskip
+\noindent No calculator is needed; leave fractions and square roots as they are.
+\textbf{Part A} (40 points): twenty statements, 2 points each. Mark each T or F. If F, give a counterexample or a one-line reason; a bare F earns 1 point, a bare T earns 2 if correct.
+Do Part A first.
+
+\noindent\textbf{Part B} (60 points, 15 each): Questions 1 and 2 ask for explanations; Questions 3 and 4 ask you to work a small example and then to explain what it shows.
+The credit is for the explanation in your own words; a quoted passage without explanation earns none.
+
+\bigskip
+\section*{Part A --- True or false}
+
+\textbf{Chapter 2}
+\begin{enumerate}
+\item If $x^{*}$ is a strict local minimizer of $f$, then it is an isolated local minimizer.
+
+\item If $\gradf(x^{*})=0$ and $\hessf(x^{*})$ is positive semidefinite, then $x^{*}$ is a local minimizer.
+
+\item Newton's method is invariant under a linear change of variables $x=Sz$ ($S$ nonsingular): the iterates in $z$ map to the iterates in $x$. Steepest descent is not.
+
+\item The sequence $x_{k}=1+k^{-k}$ converges to $1$ Q-superlinearly but not Q-quadratically.
+\end{enumerate}
+
+\textbf{Chapter 3}
+\begin{enumerate}[resume]
+\item Let $f$ be smooth and bounded below along the ray $\{x_{k}+\alpha p_{k}:\alpha>0\}$, with $p_{k}$ a descent direction. Then for any $0<c_{1}<c_{2}<1$ there exist step lengths satisfying the strong Wolfe conditions.
+
+\item Zoutendijk's theorem implies that steepest descent with a Wolfe line search converges to a local minimizer.
+
+\item Let $x_{k}\to x^{*}$ with $\gradf(x^{*})=0$, $\hessf(x^{*})\succ0$, and let $p_{k}$ be the Newton direction. With a Wolfe line search with $c_{1}\le\tfrac12$, the unit step $\alpha_{k}=1$ satisfies the Wolfe conditions for all sufficiently large $k$.
+
+\item For $f(x)=\tfrac12x\T Qx$ with $Q\succ0$, steepest descent with exact line searches reaches the minimizer in at most $n$ iterations.
+\end{enumerate}
+
+\textbf{Chapter 4}
+\begin{enumerate}[resume]
+\item In Algorithm 4.1, the trust-region radius is increased whenever $\rho_{k}>\tfrac34$.
+
+\item The Cauchy point always lies on the boundary of the trust region.
+
+\item If $B_{k}$ is indefinite, the exact solution of the trust-region subproblem lies on the boundary $\|p\|=\Delta_{k}$.
+
+\item The dogleg method for the trust-region subproblem requires $B_{k}$ to be positive definite.
+\end{enumerate}
+
+\textbf{Chapter 5}
+\begin{enumerate}[resume]
+\item Applied to $Ax=b$ with $A\in\R^{n\times n}$ symmetric positive definite, the conjugate gradient method needs exactly $n$ iterations to reach the solution in exact arithmetic.
+
+\item In the conjugate gradient method the residuals $r_{0},r_{1},\dots$ are mutually orthogonal and the directions $p_{0},p_{1},\dots$ are mutually conjugate.
+
+\item The $k$-th CG iterate $x_{k}$ minimizes $\phi(x)=\tfrac12x\T Ax-b\T x$ over the whole affine set $x_{0}+\mathrm{span}\{p_{0},\dots,p_{k-1}\}$, not only along the last direction $p_{k-1}$.
+
+\item The number of CG iterations needed to reach a given accuracy is determined by the condition number $\kappa(A)$.
+\end{enumerate}
+
+\textbf{Chapter 6}
+\begin{enumerate}[resume]
+\item If $f$ is strongly convex, then $s_{k}\T y_{k}>0$ for any two points $x_{k},x_{k+1}$, whatever line search is used.
+
+\item If $B_{k}$ is positive definite and $s_{k}\T y_{k}>0$, then the BFGS update $B_{k+1}$ is positive definite.
+
+\item If $B_{k}$ is positive definite and $s_{k}\T y_{k}>0$, then the SR1 update $B_{k+1}$ is positive definite.
+
+\item BFGS with a Wolfe line search satisfies $\liminf\|\gradf_{k}\|=0$ for every twice continuously differentiable $f$ that is bounded below.
+\end{enumerate}
+
+\section*{Part B}
+
+\section*{Question 1 (Chapter 3)}
+
+What is the Armijo (sufficient decrease) condition? What are the Wolfe conditions?
+Why is the Armijo condition with backtracking not always enough --- when is it enough, and when is it not?
+
+
+\section*{Question 2 (Chapters 3--6)}
+
+In unconstrained minimization the objective is modeled locally by a quadratic $m_{k}(p)=f_{k}+\gradf_{k}\T p+\tfrac12p\T B_{k}p$. Positive definiteness of $B_{k}$ (or of the Hessian) is often assumed, but not always needed.
+\begin{itemize}
+\item[(A)] List the methods of Chapters 3--6 that require $B_{k}$ to be positive definite, and say for each what breaks if it is not.
+\item[(B)] List the methods that do not require it, and explain in each case how that is possible.
+\end{itemize}
+
+
+\section*{Question 3 (Chapter 4)}
+
+Consider the model $m(p)=g\T p+\tfrac12p\T Bp$ with $g=(1,0)\T$ and $B=\diag(1,-1)$, and the trust region $\|p\|\le1$.
+A line search method would first make $B$ positive definite (e.g.\ $B+\tau I$ with $\tau>1$) and then search along $-(B+\tau I)^{-1}g$: find the best model value such a method can reach, for any $\tau$ and any step length within the trust region.
+Then solve the trust-region subproblem exactly using Theorem 4.1 (note what happens to the condition $\|p(\lambda)\|=\Delta$), give its model value, and explain what the trust-region step does with the negative curvature that the line search step cannot do.
+
+
+\section*{Question 4 (Chapter 5)}
+
+Let $A=\diag(1,3)$, $b=0$, $x_{0}=(3,1)\T$, with residual $r_{k}=Ax_{k}-b$; the solution is $x^{*}=0$.
+Starting from $p_{0}=-r_{0}$, take the exact line search step to $x_{1}$ and compute $r_{1}$.
+Then find the direction of the form $p_{1}=-r_{1}+\beta p_{0}$ that is conjugate to $p_{0}$ (i.e.\ $p_{0}\T Ap_{1}=0$), take the exact line search step along it, and verify that you arrive at $x^{*}$.
+For comparison, compute where exact-line-search steepest descent ($p_{1}=-r_{1}$) lands instead, and explain why it misses $x^{*}$ while the conjugate direction does not.
+
+
+\end{document}
