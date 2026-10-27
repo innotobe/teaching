@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Two-Stack Evaluator</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+/* Layout: expression strip on top, two bottom-anchored stacks beside the highlighted pseudocode, controls below. Projector-first sizes. */
+:root{
+  --bg:#EEF1F5; --panel:#FFFFFF; --ink:#1B2433; --muted:#5D6878; --line:#D3D9E2;
+  --val:#2F5FD0; --val-bg:#E3EBFB; --op:#B7791F; --op-bg:#FBF0DA; --hot:#D6452E; --hot-bg:#FDE5DF; --done:#A3ACB9;
+  --ui:"Atkinson Hyperlegible", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141922; --panel:#1C2330; --ink:#E7ECF3; --muted:#98A3B3; --line:#2C3545;
+  --val:#86A9FF; --val-bg:#1F2C4A; --op:#E8B25A; --op-bg:#3A2E18; --hot:#FF7A5C; --hot-bg:#46231C; --done:#5B6677; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141922; --panel:#1C2330; --ink:#E7ECF3; --muted:#98A3B3; --line:#2C3545;
+  --val:#86A9FF; --val-bg:#1F2C4A; --op:#E8B25A; --op-bg:#3A2E18; --hot:#FF7A5C; --hot-bg:#46231C; --done:#5B6677; color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:16px}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 32px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
+h1{margin:0;font-size:1.6rem;text-wrap:balance}
+h1 span{color:var(--muted);font-weight:400;font-size:1rem;margin-left:8px}
+.prec{font-family:var(--mono);font-size:.85rem;color:var(--muted);display:flex;flex-wrap:wrap;gap:6px}
+.prec b{color:var(--ink)}
+.prec span{border:1px solid var(--line);border-radius:6px;padding:2px 8px;background:var(--panel)}
+
+.expr{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:72px}
+.tok{font-family:var(--mono);font-weight:700;font-size:1.7rem;min-width:2.1ch;text-align:center;padding:4px 10px;border-radius:8px;border:2px solid transparent;transition:color .2s,background .2s,border-color .2s}
+.tok.num{color:var(--val)} .tok.op{color:var(--op)}
+.tok.end{color:var(--hot);border:2px dashed var(--hot)}
+.tok.done{color:var(--done)}
+.tok.cur{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tok.end.cur{background:var(--hot);color:var(--bg);border-style:solid}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1.5fr);gap:16px;align-items:stretch}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.col h2{margin:0;font-family:var(--mono);font-size:1rem;letter-spacing:.02em}
+.col.v h2{color:var(--val)} .col.o h2{color:var(--op)}
+.stack{flex:1;min-height:360px;display:flex;flex-direction:column-reverse;gap:6px;border:2px solid var(--line);border-top:none;border-radius:0 0 10px 10px;padding:8px;overflow-y:auto}
+.item{font-family:var(--mono);font-weight:700;font-size:1.6rem;text-align:center;padding:8px 0;border-radius:8px;border:2px solid}
+.v .item{background:var(--val-bg);border-color:var(--val);color:var(--val)}
+.o .item{background:var(--op-bg);border-color:var(--op);color:var(--op)}
+.item.top{box-shadow:0 0 0 3px var(--bg),0 0 0 5px currentColor}
+.item.burst{background:var(--hot-bg);border-color:var(--hot);color:var(--hot);animation:shake .28s ease-in-out infinite}
+.item.fresh{animation:popin .32s cubic-bezier(.3,1.6,.5,1)}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px) rotate(-1deg)}75%{transform:translateX(3px) rotate(1deg)}}
+@keyframes popin{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
+.empty{color:var(--muted);text-align:center;font-size:.9rem;padding:8px 0}
+
+.code{font-family:var(--mono);font-size:.92rem;line-height:1.55;white-space:pre;overflow-x:auto;margin:0}
+.code div{padding:1px 8px;border-radius:6px;border-left:4px solid transparent}
+.code div.on{background:var(--hot-bg);border-left-color:var(--hot)}
+.code div.sep{height:10px}
+.code b{color:var(--val)}
+.note{font-size:.8rem;color:var(--muted);margin:0}
+
+.msg{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--ink);border-radius:10px;padding:12px 16px;font-family:var(--mono);font-size:1.15rem;min-height:1.6em;overflow-wrap:anywhere}
+.msg.final{border-left-color:var(--hot);font-weight:700}
+
+.ctrl{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button,select,input[type=text]{font:inherit;font-size:1rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px 14px}
+button{cursor:pointer;font-weight:700}
+button:hover{border-color:var(--ink)}
+button.primary{background:var(--ink);color:var(--bg);border-color:var(--ink);min-width:7.5em}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--val);outline-offset:2px}
+input[type=text]{font-family:var(--mono);flex:1;min-width:0;width:16ch}
+.count{font-family:var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+label.speed{display:flex;align-items:center;gap:8px;color:var(--muted)}
+.err{color:var(--hot);font-size:.95rem}
+.fx{position:fixed;inset:0;pointer-events:none;z-index:20}
+.fx span{position:absolute;width:10px;height:10px;border-radius:50%}
+.fx .pow{width:auto;height:auto;border-radius:0;font-family:var(--mono);font-weight:700;font-size:1.3rem;color:var(--hot)}
+
+@media (max-width:860px){.main{grid-template-columns:1fr 1fr}.main .code-col{grid-column:1 / -1}.stack{min-height:240px}}
+@media (max-width:480px){.tok{font-size:1.3rem}.item{font-size:1.3rem}}
+@media (prefers-reduced-motion:reduce){.item.burst,.item.fresh{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>EvalExp with two stacks<span>valStk · opStk</span></h1>
+    <div class="prec" aria-label="Precedence"><span><b>$</b> 0</span><span><b>≤</b> 1</span><span><b>+ −</b> 2</span><span><b>* /</b> 3</span></div>
+  </header>
+
+  <div class="expr" id="expr" aria-live="polite"></div>
+
+  <div class="main">
+    <section class="col v"><h2>valStk</h2><div class="stack" id="vals"></div></section>
+    <section class="col o"><h2>opStk</h2><div class="stack" id="ops"></div></section>
+    <section class="col code-col"><h2>Algorithm</h2><div class="code" id="code"></div>
+    </section>
+  </div>
+
+  <div class="msg" id="msg"></div>
+
+  <div class="ctrl">
+    <button id="prev" aria-label="Previous step">◀ Prev</button>
+    <button id="play" class="primary">▶ Play</button>
+    <button id="next" aria-label="Next step">Next ▶</button>
+    <button id="reset">Reset</button>
+    <span class="count" id="count"></span>
+    <label class="speed" for="speed">Speed <input type="range" id="speed" min="200" max="1600" step="100" value="900" style="direction:rtl"></label>
+  </div>
+  <div class="ctrl">
+    <select id="preset" aria-label="Example expressions">
+      <option value="14 - 3 * 2 + 7 - 8 / 4 * 3 ≤ 9 + 2 * 5">Long: 14 − 3 * 2 + 7 − 8 / 4 * 3 ≤ 9 + 2 * 5</option>
+      <option value="14 ≤ 4 - 3 * 2 + 7">Slide 17: 14 ≤ 4 − 3 * 2 + 7</option>
+      <option value="8 - 3 - 2">Left assoc: 8 − 3 − 2</option>
+      <option value="2 + 3 * 4">Calculator: 2 + 3 * 4</option>
+    </select>
+    <input type="text" id="input" value="14 - 3 * 2 + 7 - 8 / 4 * 3 ≤ 9 + 2 * 5" aria-label="Expression">
+    <button id="load">Load</button>
+    <span class="err" id="err"></span>
+  </div>
+</div>
+<div class="fx" id="fx"></div>
+
+<script>
+const P={'$':0,'≤':1,'+':2,'-':2,'*':3,'/':3};
+const RIGHT={};
+const LINES=[
+ ['E1','<b>while</b> there\'s another token z'],
+ ['E2','  <b>if</b> isNumber(z) <b>then</b> valStk.push(z)'],
+ ['E3','  <b>else</b> repeatOps(z)'],
+ ['E4','       opStk.push(z)'],
+ ['E5','repeatOps($)'],
+ ['E6','<b>return</b> valStk.top()'],
+ ['s1',''],
+ ['R0','<b>repeatOps</b>(refOp):'],
+ ['R1','  <b>while</b> valStk.size() > 1 ∧'],
+ ['R1b','        prec(refOp) ≤ prec(opStk.top())'],
+ ['R2','    doOp()'],
+ ['s2',''],
+ ['D0','<b>doOp</b>():'],
+ ['D1','  x ← valStk.pop(); y ← valStk.pop()'],
+ ['D1b','  op ← opStk.pop()'],
+ ['D2','  valStk.push(y op x)']
+];
+const $=id=>document.getElementById(id);
+const show=t=>t==='-'?'−':t;
+const fmt=v=>typeof v==='boolean'?(v?'T':'F'):(Number.isInteger(v)?String(v):String(+v.toFixed(3)));
+const apply=(op,y,x)=>({'+':y+x,'-':y-x,'*':y*x,'/':y/x,'^':Math.pow(y,x),'≤':y<=x})[op];
+const cond=(ref,top)=>RIGHT[ref]?P[ref]<P[top]:P[ref]<=P[top];
+const rel=(ref)=>RIGHT[ref]?'<':'≤';
+
+function tokenize(s){
+  s=s.replace(/<=/g,'≤').replace(/[×]/g,'*').replace(/[−–]/g,'-').trim();
+  const re=/\s*(\d+(?:\.\d+)?|[+\-*/≤])\s*/y; const out=[];
+  while(re.lastIndex<s.length){const m=re.exec(s); if(!m) throw new Error('Unrecognized character near "'+s.slice(re.lastIndex,re.lastIndex+3)+'"'); out.push(m[1]);}
+  if(!out.length) throw new Error('Type an expression first.');
+  out.forEach((t,i)=>{const isNum=/\d/.test(t); if(isNum!==(i%2===0)) throw new Error('Numbers and operators must alternate, starting and ending with a number.');});
+  if(out.length%2===0) throw new Error('The expression must end with a number.');
+  return out.map(t=>/\d/.test(t)?{t:'num',v:parseFloat(t),s:t}:{t:'op',s:t});
+}
+
+function build(tokens){
+  const S=[],vals=[],ops=[],n=tokens.length;
+  const snap=o=>S.push(Object.assign({vals:vals.slice(),ops:ops.slice()},o));
+  snap({tok:-1,lines:[],msg:'Ready. Press Next (→) or Play.'});
+  const repeat=(ref,tok)=>{
+    while(vals.length>1&&ops.length&&cond(ref,ops[ops.length-1])){
+      const top=ops[ops.length-1];
+      snap({tok,lines:['R1','R1b','R2','D1','D1b'],burst:true,msg:`prec(${show(ref)})=${P[ref]} ${rel(ref)} prec(${show(top)})=${P[top]} → doOp(): x=${fmt(vals.at(-1))}, y=${fmt(vals.at(-2))}, op=${show(top)}`});
+      const x=vals.pop(),y=vals.pop(),op=ops.pop(),r=apply(op,y,x); vals.push(r);
+      snap({tok,lines:['D2'],fresh:'val',boom:true,msg:`valStk.push(${fmt(y)} ${show(op)} ${fmt(x)}) = ${fmt(r)}`});
+    }
+    if(!ops.length) return 'opStk is empty';
+    if(vals.length<=1) return 'valStk has only one value';
+    const top=ops[ops.length-1];
+    return `prec(${show(ref)})=${P[ref]} > prec(${show(top)})=${P[top]}${RIGHT[ref]&&P[ref]===P[top]?' (right-assoc)':''}, so it waits`;
+  };
+  tokens.forEach((z,i)=>{
+    if(z.t==='num'){vals.push(z.v); snap({tok:i,lines:['E1','E2'],fresh:'val',msg:`isNumber(${z.s}) → valStk.push(${z.s})`});}
+    else{
+      snap({tok:i,lines:['E1','E3'],msg:`${show(z.s)} is an operator → repeatOps(${show(z.s)})`});
+      const why=repeat(z.s,i); ops.push(z.s);
+      snap({tok:i,lines:['E4'],fresh:'op',msg:`${why} → opStk.push(${show(z.s)})`});
+    }
+  });
+  snap({tok:n,lines:['E5','R1','R1b'],cascade:true,msg:'End of input: repeatOps($). prec($)=0 is the lowest, so every waiting operator runs now.'});
+  repeat('$',n);
+  snap({tok:n,lines:['E6'],final:true,msg:`return valStk.top() = ${fmt(vals.at(-1))}`});
+  return S;
+}
+
+let tokens=[],steps=[],k=0,timer=null;
+const codeEl=$('code');
+codeEl.innerHTML=LINES.map(([id,h])=>`<div data-id="${id}" class="${id[0]==='s'?'sep':''}">${h}</div>`).join('');
+
+function render(anim){
+  const s=steps[k],n=tokens.length;
+  $('expr').innerHTML=tokens.map((z,i)=>`<span class="tok ${z.t} ${i<s.tok?'done':''} ${i===s.tok?'cur':''}">${show(z.s)}</span>`).join('')+
+    `<span class="tok end ${s.tok===n?'cur':''}" title="end of input">$</span>`;
+  const stackHTML=(arr,kind)=>arr.length?arr.map((v,i)=>{
+    const isTop=i===arr.length-1, second=i===arr.length-2;
+    let c='item';
+    if(s.burst&&(kind==='val'?(isTop||second):isTop)) c+=' burst';
+    else if(isTop) c+=' top';
+    if(anim&&isTop&&s.fresh===kind) c+=' fresh';
+    return `<div class="${c}">${kind==='val'?fmt(v):show(v)}</div>`;}).join(''):'<div class="empty">empty</div>';
+  $('vals').innerHTML=stackHTML(s.vals,'val');
+  $('ops').innerHTML=stackHTML(s.ops,'op');
+  codeEl.querySelectorAll('div').forEach(d=>d.classList.toggle('on',s.lines.includes(d.dataset.id)));
+  const m=$('msg'); m.textContent=s.msg; m.classList.toggle('final',!!s.final);
+  $('count').textContent=`${k} / ${steps.length-1}`;
+  $('prev').disabled=k===0; $('next').disabled=k===steps.length-1;
+}
+
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function burstFX(){
+  if(reduce) return;
+  const fx=$('fx'), cs=getComputedStyle(document.documentElement);
+  document.querySelectorAll('.item.burst').forEach(el=>{
+    const r=el.getBoundingClientRect(), cx=r.left+r.width/2, cy=r.top+r.height/2;
+    const col=cs.getPropertyValue(el.closest('.v')?'--val':'--op').trim(), hot=cs.getPropertyValue('--hot').trim();
+    for(let i=0;i<14;i++){
+      const p=document.createElement('span'), a=Math.random()*Math.PI*2, d=40+Math.random()*70;
+      p.style.left=cx+'px'; p.style.top=cy+'px'; p.style.background=i%3?col:hot; fx.appendChild(p);
+      p.animate([{transform:'translate(-50%,-50%) scale(1)',opacity:1},{transform:`translate(${Math.cos(a)*d-5}px,${Math.sin(a)*d-5}px) scale(.2)`,opacity:0}],{duration:520+Math.random()*200,easing:'cubic-bezier(.2,.7,.3,1)'}).onfinish=()=>p.remove();
+    }
+  });
+  const ops=document.querySelector('.o .item.burst');
+  if(ops){const r=ops.getBoundingClientRect(),w=document.createElement('span');w.className='pow';w.textContent='POP!';
+    w.style.left=(r.left+r.width/2)+'px';w.style.top=r.top+'px';fx.appendChild(w);
+    w.animate([{transform:'translate(-50%,0) scale(.6)',opacity:1},{transform:'translate(-50%,-50px) scale(1.3)',opacity:0}],{duration:600}).onfinish=()=>w.remove();}
+}
+
+function go(t,anim){
+  if(t<0||t>=steps.length) return;
+  if(anim&&t===k+1&&steps[k].burst) burstFX();
+  k=t; render(anim);
+}
+function stop(){clearTimeout(timer);timer=null;$('play').textContent='▶ Play';}
+function tick(){
+  if(k>=steps.length-1){stop();return;}
+  go(k+1,true);
+  const base=+$('speed').value, fast=steps[k].tok===tokens.length&&!steps[k].final;
+  timer=setTimeout(tick,fast?base*0.4:base);
+}
+function load(expr){
+  stop();
+  try{tokens=tokenize(expr);steps=build(tokens);k=0;$('err').textContent='';render(false);}
+  catch(e){$('err').textContent=e.message;}
+}
+$('play').onclick=()=>{ if(timer){stop();return;} if(k>=steps.length-1){k=0;render(false);} $('play').textContent='❚❚ Pause'; tick(); };
+$('next').onclick=()=>{stop();go(k+1,true);};
+$('prev').onclick=()=>{stop();go(k-1,false);};
+$('reset').onclick=()=>{stop();k=0;render(false);};
+$('load').onclick=()=>load($('input').value);
+$('input').addEventListener('keydown',e=>{if(e.key==='Enter')load($('input').value);});
+$('preset').onchange=e=>{$('input').value=e.target.value;load(e.target.value);};
+document.addEventListener('keydown',e=>{
+  if(e.target.matches('input[type=text],select')) return;
+  if(e.key==='ArrowRight'){e.preventDefault();$('next').click();}
+  else if(e.key==='ArrowLeft'){e.preventDefault();$('prev').click();}
+  else if(e.key===' '){e.preventDefault();$('play').click();}
+});
+load($('input').value);
+</script>
+</body>
+</html>
