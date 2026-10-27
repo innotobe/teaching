@@ -8,6 +8,3 @@ Live page: https://innotobe.github.io/teaching/
 
 The index page lists every PDF automatically, grouped by folder; it updates ~1 min after each upload.
 Course folders: `<year>-<term>-<name>/`. Display titles live in `_data/courses.yml`.
-
-## Demos (자료구조및알고리즘)
-- [Two-stack evaluator](https://innotobe.github.io/teaching/algorithms/two_stack_evaluator.html)
