@@ -41,7 +41,8 @@ Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
 
 ### Ch. 4
 - §4.3 (subproblem의 정확한 해)는 넘긴다.
-- Steihaug-CG는 Ch. 4에서 이름만 소개하고 Ch. 5에서 제대로 다룬다.
+- Steihaug-CG: ch04 덱 14쪽에 Algorithm 7.2를 preview로 통째로 실었고(7·9·15·24·26쪽에도 언급), Ch. 5 덱은 포인터만(2·39쪽).
+  "Ch. 4에서 이름만, Ch. 5에서 제대로"가 아니다 — 학생은 알고리즘은 본 상태이고, 왜 그렇게 멈춰도 되는지(Thm 7.3)는 Ch. 7이 처음이다 (2026-10-25 확인).
 
 ### Ch. 5
 - 덱 35장(58 → 39 → 35). 숙제 5문제(4×4 Cholesky 손계산 포함).
@@ -86,8 +87,32 @@ Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
 - (6.13) 유도는 W^{1/2} 변수 변환 → B̂u = u → projection 세 단계로 학생에게 공부용으로 낸다.
 
 ### Ch. 7
-- 수업: 10월 27일 §7.1, 29일 §7.2. §7.3–7.4는 "왜 넘기는가"만 말한다
-  → ch07v2의 §7.3–7.4 슬라이드(24–27쪽)는 수업에서 넘긴다.
+- 수업 (2026-11-02 확정): 10/27 §7.1(중간고사 직후라 전체 한국어), 10/29 당인리 발전소(서울복합화력) 현장학습,
+  11/3 §7.2 L-BFGS까지, 11/5 Ch. 7 나머지(compact representation·요약) + 남는 시간에 교수님이 직접 돌려 본
+  Adam·Shampoo·SOAP·Muon 결과(결과만 보여 주고 방법 설명은 안 함 — 발표 조 몫; 질문 하나: "L-BFGS는 왜 이 그래프에 없는가")
+  + 발표 수업 당부. §7.3–7.4는 "왜 넘기는가"만 말한다 → ch07v2의 24–27쪽은 수업에서 넘긴다.
+- 11/5 마무리용 두 가지: Nocedal 답장 메일 스크린샷(2026-11-02, "Very witty and fun 😊" — 이모티콘이 보이게 스크린샷으로)과
+  이태원 할로윈 오디세우스(세이렌 장면, 전봇대에 자기를 묶은 분장) https://x.com/HodlKing21M/status/2116498869588766755
+  — X 링크는 로그인 없이 안 열릴 수 있으니 수업 전 확인, 스크린샷 대비. 세이렌 = globalization(Wolfe 조건·Δ_k)로 15초 연결 가능.
+- §7.1은 Ch. 3–6의 조립이다. 새로 나오는 것은 forcing sequence (7.3)와 Thm 7.3뿐. (7.3)의 η_k는 비율이라 0.5처럼 커도 되고,
+  작아지는 쪽은 ϵ_k = η_k‖∇f_k‖의 ‖∇f_k‖다 ("η는 비율, ϵ은 절대값"). Thm 7.1은 η에 대해 tight(quadratic f에서 등호)이고,
+  약한 점은 "sufficiently near"의 반경을 안 주는 것 — Ch. 3·4의 globalization이 그 반경 문제를 맡는다는 역할 분담으로 설명.
+- 13쪽 Lanczos: Ch. 5에서 안 다뤘다. "수업에서 안 했고 몰라도 괜찮다"고 하고 넘어간다. 앞의 예제(Steihaug가 insignificant한
+  negative curvature 방향을 받아들이는 경우)만 한 마디.
+- Ch. 8(AD)은 스킵 유지. "AD 덕분에 L-BFGS를 덜 쓴다"는 말은 Hessian-vector product가 gradient 비용으로 나와 Newton–CG가
+  실용화됐다는 뜻 — 덱 8쪽에 한 줄로 처리. L-BFGS를 실제로 밀어낸 건 AD가 아니라 stochastic gradient(y_k에 noise).
+- 교수님 책 읽기 범위 (2026-11-01): 전체 정독은 안 함. pp. 166–167(Thm 7.1 derivation), 172–173(Thm 7.3 증명),
+  177–180((7.21)–(7.23), 숙제 1·2 채점용)만.
+- ch07v3 변경 목록 (tex 받으면 작업; Dropbox 링크는 이 세션에서 못 열어 src/에 올려 달라고 함):
+  1. 4쪽 "with ∇²f(x∗) **is** positive definite" → "positive definite" (책과 일치)
+  2. 10쪽 Algorithm 7.2의 셋째 if(‖r_{j+1}‖ < ϵ_k)를 별도 줄로 — 세 종료 조건이 대칭이 되게
+  3. 12쪽 preconditioning을 p̂ = Dp 변수로 다시 쓴 subproblem을 명시(ĝ_k, B̂_k 정의, ‖p̂‖ ≤ Δ_k), "(5.37)의 C 역할을 D가 한다" 한 줄,
+     M = DᵀD만 쓰고 경계 검사는 (zᵀMz)^{1/2} ≥ Δ_k (Not in the book.), 기존 incomplete Cholesky·Alg 7.3은 Read로 압축
+  4. 22쪽 IPOPT `hessian_approximation=limited-memory` = compact representation 한 줄 (Not in the book.) — 넣을지 교수님 결정
+  5. 13쪽 "(Lanczos is not covered in this course; the example above is the point.)"
+  6. 8쪽 AD 한 줄: forward-over-reverse로 ∇²f_k d를 gradient 한 번 비용에, JAX/PyTorch에서 Newton–CG 실용화 (Not in the book.);
+     책 p. 184(§8.2 끝 Hessian-vector product 단락)를 Read로
+- 숙제 3번(two-loop 손계산) 검산 완료: γ = 2/5, ρ = 1/2, r = (0.4, 0.2), H_k = [[0.6, −0.2], [−0.2, 0.4]]로 H_k∇f_k와 일치.
 - 책 오식: p. 177의 "Algorithm 8.1"은 Algorithm 6.1이다.
 - 책에 증명이 있는 정리: Thm 7.3. Thm 7.1, 7.2는 informal derivation, Thm 7.4는 증명 생략.
 - 예전 ch07 덱에는 있고 ch07v2에 없는 것 (넣을지 미정):
@@ -108,8 +133,11 @@ Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
   Newton step −2, Newton은 descent 아님) + (10.6) 모형에 GN 구현.
 
 ### Ch. 12
-- 5회 → 4회로 줄임 (11월 3·5·19·24일). 24일에 degeneracy, duality, sensitivity, AC OPF KKT 예제를 몰아넣었다.
-  여유가 생기면 이 장에 한 회를 돌려주는 것이 우선이다.
+- 5회 → 4회(11월 3·5·19·24일) → Ch. 7이 11/3·5로 늘어나 11/19·24 두 회 (2026-11-02). 두 회는 부족하므로 11/26도 Ch. 12로 쓴다.
+  Ch. 19는 두 회(§19.1–19.3) + IPOPT log 읽기 한 회면 충분 → 12/1·3·8. 12/10은 Optimiseus에서 안 간 장(8·9·10·11·13–18)을
+  한국어로 개관하는 날("감독판 삭제 장면": 8·9·11 각 3분, 10 10분, 13–14 5분, 15–18 20분 — 19장의 경쟁자 SQP·augmented Lagrangian,
+  17장 ℓ₁ penalty→restoration phase, 18장 KKT matrix·damped BFGS→IPOPT, FREEDOM이 SQP라는 것) + 남으면 토론. ch19v2 끝에 그 한 장을 붙인다.
+  24일에 degeneracy, duality, sensitivity, AC OPF KKT 예제를 몰아넣었다. 여유가 생기면 이 장에 한 회를 돌려주는 것이 우선이다.
 - Sensitivity(multipliers as sensitivities)는 FREEDOM의 미분(KKT implicit differentiation)과 겹친다.
 - 기존 ch12.pdf(17장)는 구 형식(작은 폰트, 한 장에 내용 과다)이고 비유 표현이 있다
   ("the linearization lies", "tells the truth", "switches the constraint on and off"). `Read:` 표시도 없다.
