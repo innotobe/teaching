@@ -11,6 +11,17 @@
 - **inorder 그리기의 x(v), y(v)**: 화면 좌표. x = inorder 순번(가로), y = depth(세로). inorder라서 왼쪽 subtree는 전부 v보다 왼쪽 → 겹치지 않음.
 - 순회(`positions()`, `preorder()` 등)가 `yield`로 짜여 있음 → yield를 여기서 자세히.
 
+## 왜 순회가 세 가지인가 (이 단원의 핵심 질문)
+노드를 자식보다 **먼저** 처리해야 하느냐, **나중에** 처리해야 하느냐가 문제마다 다르기 때문.
+- **Preorder (부모 → 자식)**: 자식 처리에 부모 정보가 먼저 필요. 목차/폴더 들여쓰기 출력, depth 계산, 트리 복사.
+- **Postorder (자식 → 부모)**: 부모의 답이 자식들의 답으로 정해짐. 폴더 용량 합계, height, 수식 트리 계산, 트리 삭제.
+- **Inorder (왼쪽 → 부모 → 오른쪽)**: binary tree에서 좌우 순서가 의미 있을 때. BST 정렬 출력, 중위 수식 출력, 트리 그리기 x좌표.
+
+수식 트리 `(2 + 3) * 4` 하나로 시연:
+- preorder `* + 2 3 4` (prefix)
+- inorder `2 + 3 * 4` (괄호 붙이면 원래 식)
+- postorder `2 3 + 4 *` (postfix — stack 단원 수식 계산과 연결)
+
 ## 슬라이드 오류
 - **8쪽 recursive definition**: "single node이거나, root가 ordered pair of children을 갖고 각각이 binary tree" → 자식 0개 또는 2개만 나옴 = proper binary tree 정의. 위의 "at most two"와 모순. 교재 본문은 empty tree를 허용해서 자식 하나 = 한쪽 subtree가 empty.
   퀴즈: "이 정의로 자식이 하나인 노드를 만들 수 있나?"
