@@ -22,6 +22,9 @@
 - inorder `2 + 3 * 4` (괄호 붙이면 원래 식)
 - postorder `2 3 + 4 *` (postfix — stack 단원 수식 계산과 연결)
 
+**Euler tour = 세 순회를 합친 것**: 트리 바깥을 한 바퀴 돌며 각 노드를 왼쪽(pre), 아래(in), 오른쪽(post) 세 번 지남. 세 순회는 그중 한 시점만 쓰는 특수 경우.
+예: 괄호 친 수식 출력 — 왼쪽 `(`, 아래 값, 오른쪽 `)` → `((2 + 3) * 4)`. inorder만 쓰면 괄호가 사라져 `2 + 3 * 4`가 되는 문제를 해결.
+
 ## 슬라이드 오류
 - **8쪽 recursive definition**: "single node이거나, root가 ordered pair of children을 갖고 각각이 binary tree" → 자식 0개 또는 2개만 나옴 = proper binary tree 정의. 위의 "at most two"와 모순. 교재 본문은 empty tree를 허용해서 자식 하나 = 한쪽 subtree가 empty.
   퀴즈: "이 정의로 자식이 하나인 노드를 만들 수 있나?"
