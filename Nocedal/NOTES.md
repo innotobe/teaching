@@ -28,7 +28,7 @@
 | 6 | ch06v2.4 | ch06v2.4.tex | 29장 (2026-10-13). ch06v2(37장)에서 수업에 안 쓰는 slide를 뺀 판. v2.2: H₀ slide, v2.3: SR1 유도 복원, v2.4: 7쪽·11쪽 문장 |
 | 7 | ch07v3 | ch07v3.tex (ch07v2.tex도 보관) | 30장 (2026-11-02). v3: 4쪽 오타, 10쪽 Alg 7.2 셋째 if 분리, 12쪽 preconditioned subproblem 명시, 13쪽 Lanczos 안 다룸 표시, 8쪽 AD(책 §8.2 pp. 215–216 인용), 22쪽 IPOPT 한 줄 |
 | 10 | ch10v2 | ch10v2.tex | 30장 (2026-10-10). 시간이 되면 10월 22일 |
-| 12 | ch12v7 | ch12v7.tex | 24장 (2026-11-24). v6에 half-space 예제 한 장 추가. ch12v6(23장, v5와 같은 내용), ch12v4(35장), ch12v3(31장), ch12v2(27장), 구 ch12.pdf(17장)는 보관 |
+| 12 | ch12v8 | ch12v8.tex | 25장 (2026-11-26). v7에 Example 12.9 그림 한 장 추가. ch12v7(24장), ch12v6(23장, v5와 같은 내용), ch12v4(35장), ch12v3(31장), ch12v2(27장), 구 ch12.pdf(17장)는 보관 |
 | 19 | ch19 | 없음 | ch19v2를 만들 예정 (Ch. 15 일부 포함, 아래 Ch. 19 참고) |
 
 Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
@@ -223,6 +223,13 @@ Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
 - v7 숙제(24쪽) 3번과 답 (책에 없음, Exercise 12.21 대신): f = x₁ + x₂. (a) 2 − x₁² − x₂² ≥ 0에서 (1, 1)은 λ₁ = −1/2로 (12.34d) 위반
   (책의 Example 12.2와 같은 문제; (−1, −1)은 λ₁ = 1/2로 KKT 만족). (b) x₁² + x₂² − 2 ≥ 0에서 (1, 1)은 λ₁ = 1/2로 KKT 만족이지만 local solution이 아니다:
   원 위에서 f = 2 sin(θ + π/4)가 θ = π/4에서 최대; ∇²L = −I, critical cone의 w = (1, −1)에서 wᵀ∇²L w = −2 < 0. 1, 2, 4, 5번은 v5와 같다.
+- ch12v8 (2026-11-26, 25장) — v7에서 바뀐 것 두 가지뿐: (a) 21쪽 추가, "Example 12.9: the picture" (Figure not in the book.): f의 contour(쌍곡선),
+  회색 unit disk(infeasible), x* = (1, 0)을 지나는 contour f = −0.9, critical cone, ∇f. 원 위에서 f = −0.9 + 0.7θ² + …, 0.7 = ½wᵀ∇²L w (w = (0, 1)).
+  문제는 unbounded below (x₂ = 0, x₁ → ∞에서 f → −∞)이고 x*는 local solution일 뿐이다. (b) 12쪽에 "The LICQ makes the two sets identical (Lemma 12.2)." 한 문장 추가
+  (본문은 "similar", 표는 "same"이던 불일치 해소).
+- 11/25–26 교수님과 정리한 것 (수업에서 말로): Ω는 점의 집합, T_Ω(x*)·F(x*)·C(x*, λ*)는 x*에서의 방향 d의 집합 — 그림에서 x* + d로 그려서 섞인다.
+  T_Ω는 convex가 아닐 수 있다(F와 C는 항상 convex). weakly active 제약은 빼도 KKT 점은 그대로지만 minimizer 여부는 second-order에 달려 있다(min x³ s.t. x ≥ 0).
+  Wolfe dual (12.88)은 "convex이면 Lagrange dual과 같다" 한 문장으로 한다.
 
 ### Ch. 19 — v2를 만들 것 (2026-10-10 결정)
 - Ch. 15에서 Ch. 19가 쓰는 부분을 포함해서 `ch19v2`를 새로 만든다. 수업은 Ch. 12 → 19로 바로 가므로 그 부분을 19 덱 안에 넣는다.
@@ -234,6 +241,11 @@ Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
 - Ch. 19가 Ch. 16, 18에서 가져오는 것도 있다: KKT matrix와 symmetric indefinite factorization (16.7), (16.12),
   Hessian 수정·inertia, damped BFGS (18.14)–(18.15), penalty parameter ν 갱신. 덱에서는 결과만 한 줄씩 서술한다.
 - 형식은 ch05v3 서식, 30장 안팎. 기존 ch19.pdf는 지우지 않는다.
+- (2026-11-26) LICQ가 깨질 때의 결과는 Ch. 12에서 다루지 않고 ch19v2의 KKT matrix 슬라이드에서 말한다:
+  LICQ 실패 ⇔ active constraint Jacobian이 rank-deficient → multiplier가 유일하지 않음 → KKT matrix singular → IPOPT의 δ_c 보정.
+  Theorem 12.6의 조건(null space 위에서 ∇²L positive definite)이 inertia 조건 (n, m, 0)과 같다는 것도 그 자리에서 연결한다.
+- (2026-11-26) ch19v2는 교수님이 §19.1을 먼저 읽으신 뒤 시작한다. Ch. 12에서 덱이 v2–v8로 바뀐 것을 줄이기 위함.
+  건너뛴 장의 도구(merit function, filter, inertia, slack s, fraction-to-boundary)는 처음 나오는 자리에 정의를 한두 줄 둔다.
 - Lemma 16.3 (§16.2)을 inertia 슬라이드에 넣는다: inertia(K) = inertia(ZᵀGZ) + (m, m, 0).
   §19.3이 inertia correction의 근거로 인용하고, IPOPT가 factorization에서 inertia를 보고 δ를 더하는 이유다.
   Inertia를 LDLᵀ에서 읽는 것은 §3.4와 Appendix A(Bunch–Kaufman)로 이미 수업 범위다.
