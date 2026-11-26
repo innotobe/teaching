@@ -29,7 +29,7 @@
 | 7 | ch07v3 | ch07v3.tex (ch07v2.tex도 보관) | 30장 (2026-11-02). v3: 4쪽 오타, 10쪽 Alg 7.2 셋째 if 분리, 12쪽 preconditioned subproblem 명시, 13쪽 Lanczos 안 다룸 표시, 8쪽 AD(책 §8.2 pp. 215–216 인용), 22쪽 IPOPT 한 줄 |
 | 10 | ch10v2 | ch10v2.tex | 30장 (2026-10-10). 시간이 되면 10월 22일 |
 | 12 | ch12v8 | ch12v8.tex | 25장 (2026-11-26). v7에 Example 12.9 그림 한 장 추가. ch12v7(24장), ch12v6(23장, v5와 같은 내용), ch12v4(35장), ch12v3(31장), ch12v2(27장), 구 ch12.pdf(17장)는 보관 |
-| 19 | ch19 | 없음 | ch19v2를 만들 예정 (Ch. 15 일부 포함, 아래 Ch. 19 참고) |
+| 19 | ch19v3 | ch19v3.tex | 34장 (2026-11-26). Ch. 15·16·Appendix B에서 Ch. 19가 쓰는 내용을 포함. ch19v2(34장)는 같은 날 대화에서만 오간 초안이라 repo에 없다. 구 ch19.pdf는 보관 |
 
 Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
 
@@ -150,6 +150,8 @@ Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
   Ch. 12 세 회(11/24·26, 12/1), Ch. 19 세 회(12/3·8·10, IPOPT log 읽기 포함).
   12/10의 "안 간 장 개관" 수업은 하지 않는다 — 필요한 Ch. 15–18 내용은 ch19v2 안에 넣고, ch19v2 끝의 한 장(5분)만 남긴다.
   근거: Ch. 12는 51쪽으로 책에서 가장 긴 장이다 (Ch. 3–7은 29–36쪽, Ch. 19는 35쪽).
+- 현황 (2026-11-26): Ch. 12는 11/24·26 두 회로 끝났다(ch12v8). 남은 수업일은 12/1·3·8·10 네 회이고 전부 Ch. 19에 쓸 수 있다.
+  교수님 생각은 Ch. 19를 2–3회에 끝내는 것이다. 위의 "Ch. 12 세 회 + Ch. 19 세 회"는 지난 계획이다.
 - 학생 선행 지식: 교수님의 convex optimization 기초 강의(3시간, `230412_SHS개론_인공지능최적화.pdf`, 106쪽)를 미리 보고 오게 한다.
   그 강의가 다룬 것: convex set·function, supporting hyperplane theorem, Lagrangian, dual function(concave, lower bound), weak·strong duality,
   Slater, KKT 네 조건과 complementary slackness(strong duality에서 유도, Boyd 방식), 1차원 KKT 예제.
@@ -231,7 +233,7 @@ Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
   T_Ω는 convex가 아닐 수 있다(F와 C는 항상 convex). weakly active 제약은 빼도 KKT 점은 그대로지만 minimizer 여부는 second-order에 달려 있다(min x³ s.t. x ≥ 0).
   Wolfe dual (12.88)은 "convex이면 Lagrange dual과 같다" 한 문장으로 한다.
 
-### Ch. 19 — v2를 만들 것 (2026-10-10 결정)
+### Ch. 19 — 최신은 ch19v3 (2026-11-26)
 - Ch. 15에서 Ch. 19가 쓰는 부분을 포함해서 `ch19v2`를 새로 만든다. 수업은 Ch. 12 → 19로 바로 가므로 그 부분을 19 덱 안에 넣는다.
 - Ch. 19 본문이 참조하는 Ch. 15 부분 (책 본문 대조로 확인):
   - §15.2 Example 15.1: inequality 문제의 active set 결정이 combinatorial하다는 것. §19.1이 interior-point를 쓰는 이유로 이 예를 든다.
@@ -240,19 +242,66 @@ Ch. 8, 9, 11, 16–18 덱도 있으나 수업 범위 밖이다.
 - IPOPT는 filter line search, second-order correction, restoration phase를 쓴다. 기말 프로젝트에서 IPOPT log를 해석하려면 이 부분이 필요하다.
 - Ch. 19가 Ch. 16, 18에서 가져오는 것도 있다: KKT matrix와 symmetric indefinite factorization (16.7), (16.12),
   Hessian 수정·inertia, damped BFGS (18.14)–(18.15), penalty parameter ν 갱신. 덱에서는 결과만 한 줄씩 서술한다.
-- 형식은 ch05v3 서식, 30장 안팎. 기존 ch19.pdf는 지우지 않는다.
+- 형식은 `src/`의 가장 최근 덱(ch12v8) 서식, 30장 안팎. 기존 ch19.pdf는 지우지 않는다. (예전 기록의 "ch05v3 서식"은 옛 내용이다.)
 - (2026-11-26) LICQ가 깨질 때의 결과는 Ch. 12에서 다루지 않고 ch19v2의 KKT matrix 슬라이드에서 말한다:
   LICQ 실패 ⇔ active constraint Jacobian이 rank-deficient → multiplier가 유일하지 않음 → KKT matrix singular → IPOPT의 δ_c 보정.
   Theorem 12.6의 조건(null space 위에서 ∇²L positive definite)이 inertia 조건 (n, m, 0)과 같다는 것도 그 자리에서 연결한다.
-- (2026-11-26) ch19v2는 교수님이 §19.1을 먼저 읽으신 뒤 시작한다. Ch. 12에서 덱이 v2–v8로 바뀐 것을 줄이기 위함.
+- (2026-11-26) "교수님이 §19.1을 먼저 읽으신 뒤 시작"은 같은 날 바뀌었다: 읽지 않고 바로 시작한다. 덱만 읽고 이해되어야 한다.
   건너뛴 장의 도구(merit function, filter, inertia, slack s, fraction-to-boundary)는 처음 나오는 자리에 정의를 한두 줄 둔다.
 - Lemma 16.3 (§16.2)을 inertia 슬라이드에 넣는다: inertia(K) = inertia(ZᵀGZ) + (m, m, 0).
+  (책 p. 574가 "Lemma 16.3"이라고 부르는 것은 p. 454의 Theorem 16.3이다. 덱은 Theorem 16.3으로 쓴다.)
   §19.3이 inertia correction의 근거로 인용하고, IPOPT가 factorization에서 inertia를 보고 δ를 더하는 이유다.
   Inertia를 LDLᵀ에서 읽는 것은 §3.4와 Appendix A(Bunch–Kaufman)로 이미 수업 범위다.
 - 책 안에서 IPOPT가 쓰지만 수업 밖인 나머지 (넣지 않고 언급만):
   §14.2 Mehrotra predictor-corrector (`mu_strategy adaptive`일 때만), (18.14)–(18.15) damped BFGS (L-BFGS 옵션일 때만),
   (18.12) elastic mode·§17.2 ℓ₁ penalty (IPOPT restoration phase가 푸는 문제와 비슷한 형태).
 - 위 Ch. 15 부분과 Lemma 16.3을 넣으면 IPOPT 기본 설정의 log는 책 내용으로 설명된다.
+- 전제 (2026-11-26, 교수님): 학생이 아는 것은 Ch. 1–7과 12다 (교수님이 든 범위에 Ch. 10은 없다). ch19v3는 이 전제로 점검했다.
+  앞 장 덱에서 확인한 것: ch03 23–24쪽이 Algorithm 3.3(τI + Cholesky)과 "LBLᵀ가 inertia를 알려 준다"는 한 문장을 다뤘다.
+  ch12v8 16쪽이 "LICQ이면 λ*가 유일, 아니면 여러 개이거나 없다"를 다뤘다.
+  어느 덱에도 없어서 ch19v3 안에서 정의한 것: null space와 Z, KKT matrix, 연립방정식 F(v) = 0의 Newton method(Ch. 11),
+  미분 불가능한 φ의 directional derivative, merit function·exact·filter·restoration phase·Maratos effect·second-order correction(Ch. 15),
+  inertia와 Theorem 16.3(Ch. 16), damped BFGS(Ch. 18, 한 줄), Algorithm B.1(Appendix B).
+  결과만 인용하고 넘어간 것: Theorem 17.3(ℓ₁ merit의 μ*), (18.36)의 ν 갱신, restoration phase가 푸는 문제(Ch. 17), Mehrotra predictor(§14.2).
+- 쪽수: Ch. 19에서도 인쇄 쪽수 = PDF 쪽수 − 19 (p. 563 = PDF 582쪽으로 확인).
+- 책의 어긋난 참조 두 곳: p. 574의 "Lemma 16.3"은 Theorem 16.3(p. 454). p. 577의 "Maratos effect (see Section 15.4)"는 §15.5(p. 440).
+- ch19v2 (2026-11-26, 34장, repo에 없음): Opus 5.5가 만든 초안. 교수님이 "다시 점검, Ch. 1–7·12 지식으로 되는지"를 요청해 v3로 고쳤다.
+- ch19v3 (2026-11-26, 34장) 구성: 표지(1) / Example 15.1(2) / (19.1)과 표기(3) / convex 문제와 비교(4, 책에 없음) /
+  (19.1)의 KKT와 perturbation (19.2)(5) / barrier problem (19.4), central path(6) / Newton step (19.6)(7) / fraction to the boundary(8) /
+  Algorithm 19.1(9) / Theorem 19.1(10) / 대칭형 (19.12)(11) / 축소형 (19.15)·(19.16)과 LBLᵀ(12) /
+  Newton step이 descent가 아닐 수 있음: quadratic model과 (19.23)(13) / inertia, Theorem 16.3, (19.24)(14) / Theorem 12.6이 같은 조건(15) /
+  LICQ 실패 → KKT matrix singular(16) / (19.25)(17) / Algorithm B.1(18) / μ 갱신(19) / ℓ₁ merit function(20) / filter(21) / restoration phase(22) /
+  barrier problem의 merit·filter (19.26)–(19.28)(23) / Algorithm 19.2(24) / Maratos effect, Example 15.4(25) / second-order correction(26) /
+  Example 19.2(27) / 국소 수렴 (19.58)(28) / IPOPT와 이 장(29) / IPOPT 기본값(30) / log의 열(31) / log의 문자와 exit 메시지(32) /
+  안 다룬 장(33) / 숙제(34).
+- v2 → v3에서 고친 것.
+  틀렸거나 부정확했던 곳: (a) 12쪽 "p_s는 row 2, p_z는 row 4로 소거" → (19.12)의 row 2, (19.15)의 마지막 row. "(19.15)도 KKT matrix 꼴"이라고 한 것은
+  (19.12)와 (19.16)만 해당((19.15)는 오른쪽 아래가 −Σ⁻¹). (b) 16쪽 "iterate에서 singular는 A_E의 rank 부족에서만 온다" → A의 rank에 한한 말로 고침
+  (ZᵀGZ가 singular여도 singular다). (c) 숙제 4번 "inertia (2,1,0)을 주는 가장 작은 δ"는 존재하지 않는다(δ > 1) → 문제를 바꿈.
+  (d) 30쪽 δ_w 증가 규칙을 IPOPT 옵션 문서대로 다시 씀. (e) Definition 15.1에서 "μ* > 0가 존재하여"가 빠져 있었음.
+  (f) 9쪽 Read 쪽수 568 → 567–568((19.10)은 p. 567). (g) 4쪽 비교표가 정의 전의 용어(inertia, δI, γI, SOC)를 썼음 → 말로 풀어 씀.
+  self-contained로 보강한 곳: 5쪽에 s ≥ 0의 multiplier w에서 z ≥ 0, sᵢzᵢ = 0이 나오는 유도 / 7쪽에 F(v) = 0의 Newton method 한 줄 /
+  13쪽에 (19.12)가 quadratic model (19.31a)–(19.31c)(r = 0)의 KKT system이라는 것 / 14쪽에 Z와 null space 정의 / 20쪽에 directional derivative 정의와
+  "(15.29)는 (3.4)에서 ∇fᵀp를 D로 바꾼 것" / 23쪽에 damped BFGS 한 줄 / 26쪽에 c와 A_k가 무엇인지 / 28쪽에 δ·β·θ 기호 충돌 주의 /
+  8쪽에 Boyd barrier method와의 차이(t = 1/μ, strictly feasible x₀가 필요 없음) / 33쪽에 Ch. 10 추가.
+  순서: "동기 먼저" 규칙에 맞춰 13쪽(descent가 아닐 수 있음)을 inertia 정리 앞으로 옮김 (v2는 정리가 먼저였다).
+- 책과 다르게 처리한 곳 (v3): (19.6)과 (19.12)는 폭 때문에 식 번호를 앞 문장에 붙임. Algorithm 19.1·19.2는 두 줄을 한 줄로 합친 곳이 있음(내용은 같음).
+  (19.9b)는 "α_z^max도 같은 식"으로 줄임. 15쪽(Theorem 12.6 ⟺ inertia (n, |A(x*)|, 0))과 16쪽의 null vector (0, v) 논증은 책에 없는 조합이라 (Not in the book.).
+  16쪽 마지막 항목(active inequality의 gradient가 종속이면 (19.15)가 singular 행렬에 가까워짐)도 책에 없다.
+- IPOPT 관련 내용의 출처 (29–32쪽, 전부 (Not in the book.)): IPOPT 문서의 Output·Options 쪽, Wächter & Biegler (2006, 책의 [301]).
+  확인한 것: log 열 이름과 뜻, alpha_pr 뒤 문자(f/F/h/H/R/w), exit 메시지, Lagrangian이 f + c(x)ᵀλ(책 (19.7)과 λ 부호 반대),
+  μ₀ = 0.1, μ⁺ = max{ε_tol/10, min{0.2μ, μ^1.5}}, inner test E ≤ 10μ, τ = max{0.99, 1 − μ}, δ_w 첫 시도 10⁻⁴(또는 직전 값의 1/3), 증가 배수 100(처음)·8(이후),
+  δ_c = 10⁻⁸μ^{1/4}, max_soc = 4, tol = 10⁻⁸. 대응: δ_w = 책의 δ, δ_c = 책의 γ. IPOPT가 factor하는 것은 (19.16) 꼴이고 요구 inertia는 (n, m, 0).
+  문서에서 확인하지 못해 넣지 않은 것: 끝에 나오는 요약 줄(Dual infeasibility, Complementarity, Overall NLP error)의 정의.
+  Ch. 12 메모의 "IPOPT의 Lagrangian은 f + λᵀg" 부호는 위 논문 식 (10)으로 확인됐다.
+- v3 숙제(34쪽)와 답: 1. Exercise 19.1(a): (19.1)에서 s ≥ 0의 multiplier를 w라 하면 ∇ₛ: z − w = 0이라 z ≥ 0, sᵢzᵢ = 0. (x, s = c_I(x), y, z) ↔ (x, λ_E = y, λ_I = z).
+  2. Exercise 19.5(b): Σ = S⁻¹Z는 active(sᵢ → 0, zᵢ → zᵢ* > 0)에서 ∞, inactive(zᵢ → 0)에서 0. Σ = μS⁻²도 active에서 sᵢ ≈ μ/zᵢ*라 zᵢ*²/μ → ∞, inactive에서 μ/sᵢ*² → 0.
+  3. Exercise 19.12(c): x(μ) = [(1 + 2μ) − √(1 + 4μ²)]/2, μ → 0에서 0 (x(μ) ≈ μ).
+  4. (책에 없음) (a) K(0)의 inertia는 (1, 2, 0). δ > 1이면 (2, 1, 0), δ = 1이면 (1, 1, 1)로 singular. Z = (0, 1)ᵀ, Zᵀ(G + δI)Z = δ − 1.
+  (b) 10⁻⁴, 10⁻³, 10⁻², 10⁻¹, 1이 모두 실패하고 δ = 10을 돌려준다 (lg(rg) = 1.0).
+  5. Exercise 19.11(c): p = (p_x, p_s₁, p_s₂, p_z₁, p_z₂) = (0.7, −0.8, −2.8, −0.2, 1.8). α_s^max = 1/2.8 ≈ 0.357(s₂가 0), α_z^max = 1.
+  새 점 x = −1.75, s = (0.714, 0), x² − s₁ − 1 = 1.348 ≥ 0이라 (19.54) 안이다.
+- 회차 제안 (교수님이 2–3회로 끝낼 경우): 3회면 1–12쪽 / 13–24쪽 / 25–34쪽(+ 실제 log 읽기). 2회면 1–18쪽 / 19–34쪽.
 
 
 ### Ch. 16, 18 (수업 범위 밖, FREEDOM용)
